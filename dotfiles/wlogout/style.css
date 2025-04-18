@@ -1,0 +1,89 @@
+/* Importing pywal colors */
+@import '../../.config/wlogout/wallust/colors-waybar.css';
+
+/* Genel pencere stil ayarları */
+window {
+    font-family: Fira Code Medium; /* Yazı tipi */
+    font-size: 16pt; /* Yazı boyutu */
+    color: #cdd6f4; /* Yazı rengi */
+    background-color: rgba(30, 30, 46, 0.6); /* Yarı saydam arka plan */
+}
+
+/* Butonlar için varsayılan stil ayarları */
+button {
+    background-repeat: no-repeat;            /* Arka plan resmi tekrar etmesin */
+    background-position: center;             /* Arka plan resmi ortalansın */
+    background-size: 20%;                    /* Arka plan resmi boyutu */
+    background-color: rgba(200, 220, 255, 0); /* Şeffaf arka plan */
+    border-radius: 50px;                     /* Yuvarlak butonlar */
+}
+
+/* Butona odaklandığında (focus) stil ayarları */
+button:focus {
+    background-size: 25%;                    /* Simge boyutunu büyüt */
+    border: 0px;                             /* Kenarlık yok */
+}
+
+/* Buton üzerine gelindiğinde (hover) stil ayarları */
+button:hover {
+    background-color: rgb(145, 215, 227);    /* Açık mavi arka plan */
+    color: #1e1e2e;                          /* Koyu yazı rengi */
+    background-size: 40%;                    /* Simgeyi daha da büyüt */
+    margin: 5px;                             /* Buton etrafında boşluk bırak */
+    border-radius: 50px;                     /* Daire formunu koru */
+}
+
+/* Buton içindeki simgeyi büyütmek için stil */
+button span {
+    font-size: 1.2em; /* Simge boyutunu artır */
+}
+
+/* Butonların simgeleri için arka plan ayarları */
+
+/* Lock butonu ve hover efekti */
+#lock {
+    background-image: image(url("./icons/lock.png")); /* Kilit simgesi */
+}
+#lock:hover {
+    background-image: image(url("./icons/lock-hover.png")); /* Kilit simgesine hover efekti */
+}
+
+/* Logout butonu ve hover efekti */
+#logout {
+    background-image: image(url("./icons/logout.png")); /* Çıkış simgesi */
+}
+#logout:hover {
+    background-image: image(url("./icons/logout-hover.png")); /* Çıkış simgesine hover efekti */
+}
+
+/* Suspend butonu ve hover efekti */
+#suspend {
+    background-image: image(url("./icons/sleep.png")); /* Uyku simgesi */
+}
+#suspend:hover {
+    background-image: image(url("./icons/sleep-hover.png")); /* Uyku simgesine hover efekti */
+}
+
+/* Shutdown butonu ve hover efekti */
+#shutdown {
+    background-image: image(url("./icons/power.png")); /* Güç simgesi */
+}
+#shutdown:hover {
+    background-image: image(url("./icons/power-hover.png")); /* Güç simgesine hover efekti */
+}
+
+/* Reboot butonu ve hover efekti */
+#reboot {
+    background-image: image(url("./icons/restart.png")); /* Yeniden başlatma simgesi */
+}
+#reboot:hover {
+    background-image: image(url("./icons/restart-hover.png")); /* Yeniden başlatma simgesine hover efekti */
+}
+
+/* Hibernate butonu ve hover efekti */
+#hibernate {
+    background-image: image(url("./icons/hibernate.png")); /* Hibernasyon simgesi */
+}
+#hibernate:hover {
+    background-image: image(url("./icons/hibernate-hover.png")); /* Hibernasyon simgesine hover efekti */
+}

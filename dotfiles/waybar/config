@@ -1,0 +1,131 @@
+//sudo pacman -S waybar
+//sudo pacman -S pulseaudio
+//sudo pacman -S blueman
+//sudo pacman -S networkmanager
+//sudo pacman -S alacritty
+//sudo pacman -S btop
+
+{
+    // Üst paneldeki özellikler
+    "layer": "top",  // Panelin konumu (top, overlay)
+    "height": 30,  // Panelin yüksekliği
+    "spacing": 4,  // Modüller arasındaki boşluk
+    "modules-left": ["wlr/taskbar"],  // Sol modüller
+    "modules-center": ["hyprland/workspaces"],  // Ortada gösterilecek modüller
+    "modules-right": ["pulseaudio", "bluetooth", "network", "cpu", "memory", "temperature", "backlight", "battery", "clock"],  // Sağ modüller
+
+    // Çalışan pencere modülü
+    "hyprland/workspaces": {
+        "format": "{name}",  // Çalışan pencereyi adıyla göster
+        "format-icons": {
+            "active": "",  // Aktif pencere simgesi
+            "default": "",  // Varsayılan pencere simgesi
+            "persistent": ""  // Kalıcı pencere simgesi
+        }
+    },
+
+    // Görev çubuğu modülü (window taskbar)
+    "wlr/taskbar": {
+        "format": "{icon}",  // Görev çubuğunda simgeyi göster
+        "icon-size": 20,  // Simge boyutu
+        "icon-theme": "Star",  // Simge teması
+        "tooltip-format": "{title}",  // Tooltip formatı
+        "on-click": "activate",  // Sağ tıklama ile pencereyi aktive et
+        "on-click-right": "close",  // Sağtık tıklama ile pencereyi kapat
+        "class": "taskbar",  // Bu pencere sınıfı
+        "empty-class": "empty"  // Boş pencere sınıfı
+    },
+
+    // Sistem tepsisi (tray) özellikleri
+    "tray": {
+        "icon-size": 20,  // Tray simgesi boyutu
+        "spacing": 10  // Tray simgeleri arasındaki boşluk
+    },
+
+    // Saat modülü
+    "clock": {
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",  // Tooltip formatı
+        "format-alt": "{:%d/%m/%Y}"  // Alternatif format
+    },
+
+    // CPU modülü
+    "cpu": {
+        "format": "{usage}% ",  // CPU kullanım yüzdesi ve simge
+        "tooltip": true  // Tooltip kullanımı
+    },
+
+    // Bellek (RAM) modülü
+    "memory": {
+        "format": "{}% ",  // Bellek kullanım yüzdesi ve simge
+        "interval": 5,  // Güncelleme aralığı
+        "exec": "free | awk '/Mem:/ {printf(\"%d\", $3*100/$2)}'",  // RAM kullanım yüzdesini hesaplayan komut
+        "tooltip": true,  // Tooltip gösterimi
+        "exec-tooltip": "free | awk '/Mem:/ {used=$2-$7; printf(\"%.1fG / %.1fG\\n\", used/1024/1024, $2/1024/1024)}'",  // RAM kullanılan ve toplam miktarı gösteren komut
+        "on-click": "alacritty -e btop",  // Tıklandığında btop'u başlat
+        "max-length": 8,  // Max uzunluk
+        "min-length": 8  // Min uzunluk
+    },
+
+    // Sıcaklık (CPU, GPU) modülü
+    "temperature": {
+        "hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",  // Sıcaklık sensör yolu
+        "critical-threshold": 80,  // Kritik sıcaklık eşiği
+        "format": "{temperatureC}°C {icon}",  // Sıcaklık formatı
+        "format-icons": ["", "", ""]  // Sıcaklık ikonları
+    },
+
+    // Ekran parlaklığı modülü
+    "backlight": {
+        "format": "{percent}% {icon}",  // Parlaklık yüzdesi ve simge
+        "format-icons": ["", ""]  // İkonlar (düşük ve yüksek parlaklık)
+    },
+
+    // Pil durumu modülü
+    "battery": {
+        "states": {
+            "warning": 30,  // Uyarı eşiği
+            "critical": 15  // Kritik eşiği
+        },
+        "format": "{capacity}% {icon}",  // Pil kapasitesini göster
+        "format-charging": "{capacity}% ",  // Şarj olurken format
+        "format-plugged": "{capacity}% ",  // Takılı olduğunda format
+        "format-alt": "{time} {icon}",  // Alternatif format
+        "format-icons": ["", "", "", "", ""]  // Pil simgeleri
+    },
+
+    // Bluetooth modülü
+    "bluetooth": {
+        "format-on": "",  // Bluetooth açık olduğunda simge
+        "format-off": "!",  // Bluetooth kapalı olduğunda simge
+        "format-disabled": "!",  // Bluetooth devre dışı olduğunda simge
+        "on-click": "blueman-manager",  // Blueman uygulamasını aç
+        "tooltip": false  // Tooltip devre dışı
+    },
+
+    // Ağ durumu modülü
+    "network": {
+        "format-wifi": " {essid} ({signalStrength}%)",  // Wifi formatı
+        "format-ethernet": "⬇{bandwidthDownBytes} ⬆{bandwidthUpBytes}",  // Ethernet formatı
+        "interval": 1,  // Güncelleme aralığı
+        "format": "",  // Genel ağ formatı
+        "format-disconnected": "⚠",  // Bağlantı yoksa uyarı simgesi
+        "on-click": "alacritty -e 'nmtui'",  // Ağ ayarlarını aç
+        "min-length": 17,  // Min uzunluk
+        "max-length": 17  // Max uzunluk
+    },
+
+    // Pulseaudio modülü (Ses kontrolü)
+    "pulseaudio": {
+        "format": "<span font_desc='Font Awesome 6 Free Solid'>{icon}</span> / {format_source}",  // Ses formatı
+        "format-bluetooth": "<span font_desc='Font Awesome 6 Free Solid'></span> / {format_source}",  // Bluetooth ses formatı
+        "format-bluetooth-muted": "<span font_desc='Font Awesome 6 Free Solid'></span> / {format_source}",  // Bluetooth sessiz
+        "format-muted": "<span font_desc='Font Awesome 6 Free Solid'></span> / {format_source}",  // Ses kapalı
+        "format-source": "<span font_desc='Font Awesome 6 Free Solid'></span>",  // Ses kaynağı formatı
+        "format-source-muted": "<span font_desc='Font Awesome 6 Free Solid'></span>",  // Kaynak sessiz
+        "format-icons": {
+            "headphone": "",  // Kulaklık takılıysa
+            "default": ["", "", ""]  // Diğer durumlar
+        },
+        "on-click": "pavucontrol"  // Pulseaudio ayarlarını aç
+    }
+}

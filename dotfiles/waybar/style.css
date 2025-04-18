@@ -1,0 +1,191 @@
+/* Genel stil */
+* {
+    border-radius: 10px;
+    font-family: FontAwesome, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+}
+
+/* Waybar panel */
+window#waybar {
+    background-color: rgba(43, 48, 59, 0.0);
+    border-bottom: 3px solid rgba(100, 114, 125, 0.0);
+    color: #ffffff;
+    transition: background-color 0.5s;
+}
+
+window#waybar.hidden {
+    opacity: 0.2;
+}
+
+window#waybar.termite {
+    background-color: #3F3F3F;
+}
+
+window#waybar.chromium {
+    background-color: #000000;
+    border: none;
+}
+
+/* Button stili */
+button {
+    box-shadow: inset 0 -3px transparent;
+    border: none;
+    border-radius: 0;
+}
+
+/* Panel elemanları */
+#clock,
+#battery,
+#cpu,
+#memory,
+#temperature,
+#backlight,
+#bluetooth,
+#network,
+#pulseaudio,
+#tray,
+#mode,
+#mpd {
+    padding: 0 10px;
+    color: #ffffff;
+}
+
+/* Görev çubuğu */
+#taskbar {
+    background: #000000;
+    margin: 0 4px;
+    padding: 0 10px;
+    border-radius: 10px;
+    transition: all 0.3s ease-in-out;
+}
+
+#taskbar.empty {
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    background: transparent;
+    border: none;
+}
+
+/* Görev çubuğundaki butonlar */
+#taskbar button {
+    padding: 5px;  /* Buton içindeki boşluk */
+    background-color: transparent;
+    border: none;
+    border-radius: 50%;  /* Dairesel şekil */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#taskbar button:hover {
+    background-color: white;
+    color: black;
+}
+
+
+/* Pencere ve çalışma alanı */
+#window,
+#workspaces {
+    background: #000000;
+    margin: 0 4px;
+    padding: 0 10px;
+    border-radius: 10px;
+}
+
+#workspaces button {
+    padding: 0 5px;
+    color: #7984a4;
+    background-color: transparent;
+    box-shadow: inset 0 -3px transparent;
+    border: none;
+    border-radius: 5px;
+}
+
+#workspaces button.focused {
+    background-color: transparent;
+}
+
+#workspaces button.hover {
+    background-color: white;
+    color: black;
+}
+
+#workspaces button.active {
+    color: #fff;
+}
+
+#workspaces button.urgent {
+    background-color: #eb4d4b;
+}
+
+/* Saat, pil, CPU, bellek ve diğer modüller */
+#clock,
+#battery,
+#cpu,
+#memory,
+#backlight,
+#bluetooth,
+#network,
+#pulseaudio,
+#temperature {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Kritik pil durumu */
+#battery.critical:not(.charging) {
+    color: #ffffff;
+    background-color: #f53c3c;
+    animation: blink 0.5s linear infinite alternate;
+}
+
+/* CPU, bellek, ağ, ses, sıcaklık gibi modüller */
+#cpu,
+#memory,
+#backlight,
+#bluetooth,
+#network,
+#pulseaudio,
+#temperature {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Ağ kesildiğinde uyarı */
+#network.disconnected {
+    background-color: #f53c3c;
+}
+
+/* Ses modülü (pulseaudio) */
+#pulseaudio.muted {
+    background-color: #000000;
+}
+
+/* Sıcaklık kritik olduğunda */
+#temperature.critical {
+    color: #000000;
+    background-color: #f53c3c;
+}
+
+/* Sistem tepsisi */
+#tray {
+    color: #ffffff;
+    background-color: #000000;
+}
+
+/* Tray simgeleri için efektler */
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: #eb4d4b;
+}
+
+/* Blink animasyonu (pil kritik) */
+@keyframes blink {
+    to {
+        color: #ffffff;
+        background-color: #000000;
+    }
+}
