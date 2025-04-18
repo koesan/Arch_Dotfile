@@ -1,5 +1,10 @@
 # Arch Linux Kurulum Rehberi
 
+| ![20250418_04h29m34s_grim](resimler/20250418_04h29m34s_grim.png) | ![20250418_04h29m47s_grim](resimler/20250418_04h29m47s_grim.png) |
+| --------------------------------------------------------------- | --------------------------------------------------------------- |
+| ![20250418_04h30m10s_grim](resimler/20250418_04h30m10s_grim.png) | ![20250418_04h32m49s_grim](resimler/20250418_04h32m49s_grim.png) |
+
+
 Bu rehberde, **Arch Linux** kurulumu ve yapılandırması için adımlar sırasıyla verilmiştir. Ayrıca bazı popüler uygulamaların kurulumları da yer almaktadır.
 
 Bu kurulum **Arch Linux**'a özgüdür ve kullandığım Arch dağıtımı **EndeavourOS**'tur. EndeavourOS kurulumu hakkında internette birçok kaynak bulunmaktadır. Ancak, bu kurulum **diğer Arch tabanlı dağıtımlarda** da uygulanabilir. **Fedora**, **Debian** veya diğer dağıtımlarda bu kurulum test edilmemiştir, bu yüzden bu tür sistemlerde çalışıp çalışmayacağı garanti edilemez. Bu tür dağıtımlarda çalışmak için bazı ayarlamalar ve farklı paket yönetimi komutları gerekebilir.
