@@ -88,6 +88,7 @@ rm -rf yay/
 
 ## 4. Google Chrome Kurulumu
 
+Aur'da google bazı durumlarda sorun çıkabiliyor. Google'yi flatpaktan kurmak daha uygun olur.
 Tarayıcı olarak Google Chrome'u AUR aracılığıyla yüklemek için aşağıdaki komutu kullanabilirsiniz. İsterseniz farklı bir tarayıcı da kurabilirsiniz.
 
 ```bash
@@ -512,6 +513,12 @@ sudo flatpak override --env=ICON_THEME=dracula-icons-main
 ```
 
 ### Bazı FlatPak uygulamalar:
+
+#### Google
+
+```bash
+flatpak install flathub com.google.Chrome
+```
 
 #### Bottles(for exe):
 
