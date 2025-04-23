@@ -124,11 +124,11 @@ yay -S sublime-text-4
 2. Sağ taraftaki kullanıcı dosyasına aşağıdaki JSON’u ekleyin (veya var olan benzer satırları güncelleyin):
 
 ```json
-   [
-       { "keys": ["ctrl+down"],  "command": "move", "args": { "by": "lines", "forward": true,  "extend": true } },
-       { "keys": ["ctrl+up"],    "command": "move", "args": { "by": "lines", "forward": false, "extend": true } },
-       { "keys": ["ctrl+shift+b"], "command": "exec", "args": { "kill": true } }
-   ]
+[
+    { "keys": ["ctrl+down"],  "command": "move", "args": { "by": "lines", "forward": true,  "extend": true } },
+    { "keys": ["ctrl+up"],    "command": "move", "args": { "by": "lines", "forward": false, "extend": true } },
+    { "keys": ["ctrl+shift+b"], "command": "exec", "args": { "kill": true } }
+]
 ```
 Kaydedip kapattıktan sonra
 
@@ -213,7 +213,7 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 Hyprland'i ve gerekli bazı paketleri yükleyin.
 
 ```bash
-sudo pacman -S hyprland hyprpaper grim slurp hyprpolkitagent
+sudo pacman -S hyprland hyprpaper grim slurp hyprpolkitagent xdg-desktop-portal-hyprland
 ```
 
 Ekran paylaşımı için gerekli paketleri yükleyin:
@@ -229,6 +229,43 @@ Hyprland'ı varsayılan yapmak için portals.conf dosyasını oluşturuyoruz:
 mkdir -p ~/.config/xdg-desktop-portal
 echo -e "[preferred]\ndefault=xdg-desktop-portal-hyprland" > ~/.config/xdg-desktop-portal/portals.conf
 systemctl --user restart xdg-desktop-portal
+```
+
+Hyprland NVIDIA ayarı:
+
+GRUB ayarlarını düzenlemek için aşağıdaki komutu kullanın:
+
+```bash
+sudo nano /etc/default/grub
+```
+
+GRUB_CMDLINE_LINUX_DEFAULT kısmında, eğer aşağıdaki satır varsa:
+
+```json
+GRUB_CMDLINE_LINUX_DEFAULT='nowatchdog nvme_load=YES nvidia_drm.modeset=1 loglevel=3'
+```
+
+Bunu sonuna boşluk bırakarak ekleyin:
+
+```json
+GRUB_CMDLINE_LINUX_DEFAULT='nowatchdog nvme_load=YES nvidia_drm.modeset=1 loglevel=3 nvidia.NVreg_PreserveVideoMemoryAllocations=1'
+```
+
+Eğer herhangi bir şey yoksa, `GRUB_CMDLINE_LINUX_DEFAULT=nvidia.NVreg_PreserveVideoMemoryAllocations=1` satırını ekleyin, ardından değişiklikleri kaydedip çıkın.
+
+Son olarak, aşağıdaki komutu çalıştır:
+
+```bash
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+thema ve icon için
+
+```bash
+cat > ~/.config/xdg-desktop-portal/hyprland-portals.conf <<'EOF'
+[preferred]
+default=hyprland;gtk
+EOF
 ```
 
 Dosyaları aktarmak için:
@@ -391,13 +428,13 @@ Dosyaları aktarmak için:
 cp -r configs/.zshrc "$HOME/"
 ```
 
-# Gerekli araçlar
+### Gerekli araçlar
 
 ```bash
 sudo pacman -S curl git wget
 ```
 
-# Oh My Zsh ve eklenti kurulumu
+### Oh My Zsh ve eklenti kurulumu
 
 ```bash
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
@@ -438,30 +475,8 @@ source $HOME/.zshrc
 ```
 
 ---
-## 14. FlatPak:
 
-```bash
-sudo pacman -S flatpak
-sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-```
-
----
-
-## 15. Bottles(for exe):
-
-AUR
-```bash
-yay -S bottles
-```
-
-Flatpak
-```bash
-flatpak install flathub com.usebottles.bottles
-```
-
----
-
-## 16. Swap Alanı Oluşturma
+## 14. Swap Alanı Oluşturma
 
 8 GB'lık bir swap alanı oluşturmak için:
 
@@ -478,7 +493,87 @@ echo "/swapfile     swap     swap    defaults    0 0" >> /etc/fstab
 
 ---
 
-## 17. LİBREOFFİCE
+## 15. FlatPak:
+
+```bash
+sudo pacman -S flatpak
+sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+```
+
+### Tema ve İcon kullanma: 
+
+```bash
+# 1) Flatpak uygulamalarına tema‑ikon klasörlerini tanıt
+sudo flatpak override --filesystem=$HOME/.themes
+sudo flatpak override --filesystem=$HOME/.icons
+# 2) Tüm Flatpak uygulamalarına hangi tema / ikon setini kullanacağını söyle
+sudo flatpak override --env=GTK_THEME=Andromeda-gtk
+sudo flatpak override --env=ICON_THEME=dracula-icons-main
+```
+
+### Bazı FlatPak uygulamalar:
+
+#### Bottles(for exe):
+
+```bash
+flatpak install flathub com.usebottles.bottles
+```
+
+#### Pinta
+
+```bash
+flatpak install flathub com.github.PintaProject.Pinta
+```
+
+#### Mark Text
+
+```bash
+flatpak install flathub com.github.PintaProject.Pinta
+```
+
+
+### Kurulu FlatPak uygulamalarını listelemek ve çaşıştırmak için
+
+kurulu flatpak uygulamalarını listele:
+
+```bash
+flatpak list
+```
+
+```json
+➜  Arch_Dotfile git:(main) ✗ flatpak list
+Ad                                Uygulama Kimliği                        Sürüm  Dal          Kurulum
+Şişeler                           com.usebottles.bottles                  51.21  stable       system
+Mesa                              org.freedesktop.Platform.GL.default     25.0.3 24.08        system
+Mesa (Extra)                      org.freedesktop.Platform.GL.default     25.0.3 24.08extra   system
+Mesa                              org.freedesktop.Platform.GL32.default   25.0.3 24.08        system
+FFmpeg extension with extra code… org.freedesktop.Platform.ffmpeg-full           24.08        system
+i386                              ….freedesktop.Platform.ffmpeg_full.i386        24.08        system
+openh264                          org.freedesktop.Platform.openh264       2.5.1  2.5.1        system
+GNOME Application Platform versi… org.gnome.Platform                             47           system
+i386                              org.gnome.Platform.Compat.i386                 47           system
+gecko                             org.winehq.Wine.gecko                          stable-24.08 system
+mono                              org.winehq.Wine.mono                           stable-24.08 system
+➜  Arch_Dotfile git:(main) ✗
+```
+
+Uygulama çalıştır:
+
+```bash
+flatpak run com.usebottles.bottles #("uygulama Kimliği")
+```
+
+Uygulama güncelle:
+
+```bash
+flatpak update # flatpak update com.usebottles.bottles bir uygulama güncelle 
+``` 
+
+---
+
+## 16. Uygulamalar 
+
+### LİBREOFFİCE
 
 
 ```bash
@@ -487,9 +582,7 @@ sudo pacman -S steam
 
 ---
 
-## 18. STEAM
-
-8 GB'lık bir swap alanı oluşturmak için:
+### STEAM
 
 ```bash
 sudo pacman -S steam
@@ -507,9 +600,42 @@ Driver kurma ksımında sisteminizdeki ekran kartına göre bir seçim yapmanız
 Bir sayı girin (default=1): 2
 ```
 
+### code 
+
+```bash
+sudo pacman -S code
+```
+
+### VLC
+
+```bash
+sudo pacman -S vlc
+```
+
 ---
 
-## 19. Tema ve İkonlar
+## 17. DOCKER
+
+```bash
+sudo pacman -S docker 
+```
+
+Başlatmak için:
+
+```bash
+sudo systemctl start docker          # Docker servisini başlat
+#sudo systemctl enable docker         # Docker servisini sistem başlangıcında başlatmak için
+```
+
+Sudo kullanmamak için:
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+---
+
+## 18. Tema ve İkonlar
 
 Görsel özelleştirme için Nwg-look aracını ve ikonları yükleyin:
 
@@ -529,7 +655,7 @@ Ardından, ***nwg-look*** programını çalıştırarak tema ve ikonları deği�
 
 ---
 
-## 20. Gereksiz paketleri kaldır(EndeavourOS gnome için):
+## 19. Gereksiz paketleri kaldır(EndeavourOS gnome için):
 
 ```bash
 sudo pacman -Rn gnome-console xterm gnome-terminal meld gnome-text-editor gnome-weather
