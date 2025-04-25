@@ -1,9 +1,8 @@
 # Arch Linux Kurulum Rehberi
 
 | ![20250418_04h29m34s_grim](resimler/20250418_04h29m34s_grim.png) | ![20250418_04h29m47s_grim](resimler/20250418_04h29m47s_grim.png) |
-| --------------------------------------------------------------- | --------------------------------------------------------------- |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------- |
 | ![20250418_04h30m10s_grim](resimler/20250418_04h30m10s_grim.png) | ![20250418_04h32m49s_grim](resimler/20250418_04h32m49s_grim.png) |
-
 
 Bu rehberde, **Arch Linux** kurulumu ve yapılandırması için adımlar sırasıyla verilmiştir. Ayrıca bazı popüler uygulamaların kurulumları da yer almaktadır.
 
@@ -24,7 +23,7 @@ Bu, tamamen kişisel tercihlere ve kullanım senaryolarına bağlıdır, ve sist
 
 > [!TIP] **Hazır Script Kullanımına Dair Uyarı:**  
 > Bu repoda **hazır bir kurulum scripti** sunmamamın nedeni, internet üzerinde çok sayıda hazır dotfile kurulum scripti bulunduğundan dolayı bunların çoğu genel bir kurulum sağlar. Ancak bu tür scriptler, istediğiniz özelleştirmeleri yapmanıza genellikle olanak tanımaz ve bazen istemediğiniz ya da gereksiz gördüğünüz uygulamalar da kurulabilir.  
->   
+> 
 > Bu yüzden adım adım kurulumu tercih ettim. Bu yöntemle, her aşamada istediğiniz kurulumu yapabilir, örneğin: **wofi yerine rofi** kullanabilir, **kendi terminal emilatörünüzü** veya **dosya yöneticinizi** seçebilirsiniz. Bu sayede daha özelleştirilmiş bir ortam elde edersiniz.
 
 ---
@@ -88,9 +87,6 @@ rm -rf yay/
 
 ## 4. Google Chrome Kurulumu
 
-Aur'da google bazı durumlarda sorun çıkabiliyor. Google'yi flatpaktan kurmak daha uygun olur.
-Tarayıcı olarak Google Chrome'u AUR aracılığıyla yüklemek için aşağıdaki komutu kullanabilirsiniz. İsterseniz farklı bir tarayıcı da kurabilirsiniz.
-
 ```bash
 yay -S google-chrome
 ```
@@ -131,6 +127,7 @@ yay -S sublime-text-4
     { "keys": ["ctrl+shift+b"], "command": "exec", "args": { "kill": true } }
 ]
 ```
+
 Kaydedip kapattıktan sonra
 
 - **Ctrl + ↓ / Ctrl + ↑** ile satır satır seçim yapabilirsiniz.  
@@ -157,22 +154,22 @@ Arayüzünüz artık koyu‑renkli, renkli ikonlu ve modern bir görünüme kavu
 > **Nasıl kurulur?**  
 > `Ctrl + Shift + P` → `Package Control: Install Package` → eklenti adını yazıp **Enter**.
 
-| Eklenti Adı            | Ne İşe Yarar?                                                                                       |
-|------------------------|------------------------------------------------------------------------------------------------------|
-| **Markdown Preview**   | `Ctrl + B` ile aynı dizinde `.html` oluşturur; **Preview in Browser** komutuyla canlı ön‑izleme sunar.|
-| **SideBarEnhancements**| Dosya & klasör sağ‑tık menüsüne ek eylemler kazandırır.                                             |
-| **BracketHighlighter** | Parantez, köşeli ve süslü parantez eşlerini vurgular.                                                |
-| **A File Icon**        | Dosya türlerine göre renkli ikonlar gösterir.                                                        |
-| **AutoFileName**       | Dosya yolu/adı tamamlama sağlar.                                                                    |
+| Eklenti Adı             | Ne İşe Yarar?                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Markdown Preview**    | `Ctrl + B` ile aynı dizinde `.html` oluşturur; **Preview in Browser** komutuyla canlı ön‑izleme sunar. |
+| **SideBarEnhancements** | Dosya & klasör sağ‑tık menüsüne ek eylemler kazandırır.                                                |
+| **BracketHighlighter**  | Parantez, köşeli ve süslü parantez eşlerini vurgular.                                                  |
+| **A File Icon**         | Dosya türlerine göre renkli ikonlar gösterir.                                                          |
+| **AutoFileName**        | Dosya yolu/adı tamamlama sağlar.                                                                       |
 
 ---
 
 ### 5.4 Otomatik Tamamlama (Python Odaklı)
 
-| Paket            | Açıklama                                                                                      |
-|------------------|------------------------------------------------------------------------------------------------|
-| **LSP**          | Dil Sunucusu Protokolü ile akıllı tamamlama, hata tespiti, sembol gezintisi sağlar.            |
-| **LSP‑pyright**  | Python 3 için hızlı & hafif dil sunucusu; type‑checking, refactor, oto‑import özellikleri sunar.|
+| Paket           | Açıklama                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| **LSP**         | Dil Sunucusu Protokolü ile akıllı tamamlama, hata tespiti, sembol gezintisi sağlar.              |
+| **LSP‑pyright** | Python 3 için hızlı & hafif dil sunucusu; type‑checking, refactor, oto‑import özellikleri sunar. |
 
 1. `Ctrl + Shift + P` → **Package Control: Install Package** → **LSP**  
 2. Aynı adımla **LSP-pyright** paketini yükleyin.  
@@ -182,14 +179,13 @@ Arayüzünüz artık koyu‑renkli, renkli ikonlu ve modern bir görünüme kavu
 
 ### 5.5 Kısayol: Markdown Ön‑İzleme Hızlı Kullanım
 
-| Kısayol / Komut                     | Etki                                                                       |
-|------------------------------------|----------------------------------------------------------------------------|
-| **Ctrl + B**                       | Aktif `.md` dosyasını `.html`’e derler ve tarayıcıda açar.                  |
-| **Ctrl + Shift + P → “Preview…”**  | “Markdown Preview: Preview in Browser” komutuyla anlık ön‑izleme başlatır.  |
+| Kısayol / Komut                   | Etki                                                                       |
+| --------------------------------- | -------------------------------------------------------------------------- |
+| **Ctrl + B**                      | Aktif `.md` dosyasını `.html`’e derler ve tarayıcıda açar.                 |
+| **Ctrl + Shift + P → “Preview…”** | “Markdown Preview: Preview in Browser” komutuyla anlık ön‑izleme başlatır. |
 
 Bu adımlarla Sublime Text, verimli bir Markdown ve Python geliştirme ortamına dönüşmüş olur.  
 Herhangi bir ek özelleştirme ihtiyacında yine buradayım!
-
 
 ---
 
@@ -223,6 +219,43 @@ Ekran paylaşımı için gerekli paketleri yükleyin:
 sudo pacman -S pipewire wireplumber
 yay -S xdg-desktop-portal-hyprland-git
 ```
+
+### Ses Sorunu Çözümü - Arch Linux
+
+1. **Ses Sistemlerini Kontrol Etme:**
+   Aşağıdaki komutu çalıştırarak sisteminizde hangi ses sistemlerinin aktif olduğunu kontrol edin:
+   
+   ```bash
+   ps -e | grep -E 'pulse|pipe'
+   
+     31196 ?        00:00:00 pipewire
+     31335 ?        00:00:00 pulseaudio
+   
+   Eğer burdaki gibi PulseAudio ve PipeWire aynı anda çalışıyorsa, çakışmaya sebep olabilir.
+   ```
+
+2. Eğer çakışan iki sistem varsa, bunlardan birini kaldırın. 
+
+        **Örneğin**, PulseAudio'yu kaldırmak için(PulseAudio GNOME masaüstü ortamında         gereklidir):
+
+```bash
+sudo pacman -Rns pulseaudio
+```
+
+3. Kaldırdığınız PulseAudio yerine PipeWire’ı yükleyin:
+
+```bash
+sudo pacman -S pipewire pipewire-audio pipewire-pulse wireplumber
+```
+
+4. PipeWire servislerini yeniden başlatın:
+
+```bash
+systemctl --user daemon-reexec
+systemctl --user restart pipewire pipewire-pulse wireplumber
+```
+
+Bu Mikrafon sorununu çözmez ise internete araştırma yapman gerekecek.
 
 Hyprland'ı varsayılan yapmak için portals.conf dosyasını oluşturuyoruz:
 
@@ -282,7 +315,6 @@ dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 ```
 
 Her açılışta root'a yetki verilmesi için ~/.profile dosyasına ekliyoruz:
-
 
 ```bash
 sudo pacman -S xorg-xhost
@@ -408,6 +440,7 @@ Zsh terminali, zengin özelliklere sahip bir kabuktur.
 ```bash
 sudo pacman -S zsh
 ```
+
 ```bash
 chsh -s $(which zsh)
 ```
@@ -421,7 +454,6 @@ sudo reboot
 ```bash
 echo $SHELL #bash yerine zsh çıktısı olamsı lazım bin/zsh gibi
 ```
-
 
 Dosyaları aktarmak için:
 
@@ -459,7 +491,6 @@ python3 -m pip config set global.break-system-packages true
 ---
 
 ## 13. PYENV:
-
 
 ```bash
 pacman -S pyenv
@@ -501,7 +532,7 @@ sudo pacman -S flatpak
 sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 ```
 
-### Tema ve İcon kullanma: 
+### Tema ve İcon kullanma:
 
 ```bash
 # 1) Flatpak uygulamalarına tema‑ikon klasörlerini tanıt
@@ -538,7 +569,6 @@ flatpak install flathub com.github.PintaProject.Pinta
 flatpak install flathub com.github.PintaProject.Pinta
 ```
 
-
 ### Kurulu FlatPak uygulamalarını listelemek ve çaşıştırmak için
 
 kurulu flatpak uygulamalarını listele:
@@ -574,17 +604,23 @@ Uygulama güncelle:
 
 ```bash
 flatpak update # flatpak update com.usebottles.bottles bir uygulama güncelle 
-``` 
+```
 
 ---
 
-## 16. Uygulamalar 
+## 16. Uygulamalar
 
 ### LİBREOFFİCE
 
-
 ```bash
 sudo pacman -S steam
+```
+
+Microsoft office font
+
+```bash
+yay -S ttf-ms-fonts
+fc-cache -fv
 ```
 
 ---
@@ -607,7 +643,7 @@ Driver kurma ksımında sisteminizdeki ekran kartına göre bir seçim yapmanız
 Bir sayı girin (default=1): 2
 ```
 
-### code 
+### code
 
 ```bash
 sudo pacman -S code
