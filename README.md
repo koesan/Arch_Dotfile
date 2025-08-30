@@ -8,19 +8,17 @@
 | --- | --- |
 | ![Screenshot 3](/resimler/20250418_04h30m10s_grim.png?msec=1756589478609) | ![Screenshot 4](/resimler/20250418_04h32m49s_grim.png?msec=1756589478551) |
 
-**Arch Linux** sistemlerde **Hyprland** masaüstü ortamı ve **koesan/Arch_Dotfile** yapılandırmasını otomatik olarak kuran kurulum scripti.
+---
 
-## ✨ Özellikler
+## 🚀 Hızlı Kurulum
+
+### ✨ Özellikler
 
 - 🎯 **Tek Komut Kurulum**: Tüm sistem bir script ile kurulur
 - 🔧 **Çakışma Önleme**: Paket çakışmaları otomatik tespit edilir
 - 💡 **Akıllı Kurulum**: Mevcut paketler atlanır
 - 📊 **Test Modu**: Neyin kurulacağını önceden görebilirsiniz
 - 🎨 **Modern UI**: Hyprland + Waybar + Wofi ile şık masaüstü
-
----
-
-## 🚀 Hızlı Kurulum
 
 ### 📋 Sistem Gereksinimleri
 
