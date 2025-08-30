@@ -4,9 +4,9 @@
 [](https://hyprland.org/)
 [![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-| ![Screenshot 1](file:///home/koesan/Arch_Dotfile/resimler/20250418_04h29m34s_grim.png?msec=1756589478626) | ![Screenshot 2](file:///home/koesan/Arch_Dotfile/resimler/20250418_04h29m47s_grim.png?msec=1756589478599) |
+| ![Screenshot 1](/resimler/20250418_04h29m34s_grim.png?msec=1756589478626) | ![Screenshot 2](/resimler/20250418_04h29m47s_grim.png?msec=1756589478599) |
 | --- | --- |
-| ![Screenshot 3](file:///home/koesan/Arch_Dotfile/resimler/20250418_04h30m10s_grim.png?msec=1756589478609) | ![Screenshot 4](file:///home/koesan/Arch_Dotfile/resimler/20250418_04h32m49s_grim.png?msec=1756589478551) |
+| ![Screenshot 3](/resimler/20250418_04h30m10s_grim.png?msec=1756589478609) | ![Screenshot 4](/resimler/20250418_04h32m49s_grim.png?msec=1756589478551) |
 
 **Arch Linux** sistemlerde **Hyprland** masaüstü ortamı ve **koesan/Arch_Dotfile** yapılandırmasını otomatik olarak kuran kurulum scripti.
 
