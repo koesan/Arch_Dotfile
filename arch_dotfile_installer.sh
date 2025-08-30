@@ -368,6 +368,16 @@ setup_flatpak() {
     # Flathub deposunu ekle
     sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     
+    # MarkText kurulumu
+    log "MarkText (Markdown editörü) kuruluyor..."
+    flatpak install flathub com.github.marktext.marktext -y
+    
+    if [[ $? -eq 0 ]]; then
+        success "MarkText kuruldu"
+    else
+        warning "MarkText kurulumu başarısız - devam ediliyor"
+    fi
+    
     success "Flatpak yapılandırıldı"
 }
 
