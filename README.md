@@ -1,47 +1,116 @@
-# Arch Linux Kurulum Rehberi
+# 🚀 Arch Linux Dotfile Kurulum Scripti
 
-| ![20250418_04h29m34s_grim](resimler/20250418_04h29m34s_grim.png) | ![20250418_04h29m47s_grim](resimler/20250418_04h29m47s_grim.png) |
-| ---------------------------------------------------------------- | ---------------------------------------------------------------- |
-| ![20250418_04h30m10s_grim](resimler/20250418_04h30m10s_grim.png) | ![20250418_04h32m49s_grim](resimler/20250418_04h32m49s_grim.png) |
+[](https://archlinux.org/)
+[](https://hyprland.org/)
+[![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Bu rehberde, **Arch Linux** kurulumu ve yapılandırması için adımlar sırasıyla verilmiştir. Ayrıca bazı popüler uygulamaların kurulumları da yer almaktadır.
+| ![Screenshot 1](file:///home/koesan/Arch_Dotfile/resimler/20250418_04h29m34s_grim.png?msec=1756589478626) | ![Screenshot 2](file:///home/koesan/Arch_Dotfile/resimler/20250418_04h29m47s_grim.png?msec=1756589478599) |
+| --- | --- |
+| ![Screenshot 3](file:///home/koesan/Arch_Dotfile/resimler/20250418_04h30m10s_grim.png?msec=1756589478609) | ![Screenshot 4](file:///home/koesan/Arch_Dotfile/resimler/20250418_04h32m49s_grim.png?msec=1756589478551) |
 
-Bu kurulum **Arch Linux**'a özgüdür ve kullandığım Arch dağıtımı **EndeavourOS**'tur. EndeavourOS kurulumu hakkında internette birçok kaynak bulunmaktadır. Ancak, bu kurulum **diğer Arch tabanlı dağıtımlarda** da uygulanabilir. **Fedora**, **Debian** veya diğer dağıtımlarda bu kurulum test edilmemiştir, bu yüzden bu tür sistemlerde çalışıp çalışmayacağı garanti edilemez. Bu tür dağıtımlarda çalışmak için bazı ayarlamalar ve farklı paket yönetimi komutları gerekebilir.
+**Arch Linux** sistemlerde **Hyprland** masaüstü ortamı ve **koesan/Arch_Dotfile** yapılandırmasını otomatik olarak kuran kurulum scripti.
 
-**Uyarı**: Arch ve Arch tabanlı dağıtımlar, genellikle ileri düzey kullanıcılar için tasarlanmıştır. Yani bu kurulum sırasında karşılaşılan sorunlar, çözülmesi biraz daha fazla bilgi ve deneyim gerektirebilir. Başlamadan önce, sisteminizin yedeğini almanızı ve yeterli teknik bilgiye sahip olduğunuzdan emin olmanızı öneririm.
+## ✨ Özellikler
 
-## Çekirdek ve Masaüstü Ortamı
-
-Daha önceki Arch dağıtımlarında yaşadığım sorunlar ve deneyimlerim nedeniyle, sistemimde **2. bir çekirdek** ve **2. bir masaüstü ortamı** bulunduruyorum. Genel olarak **Zen çekirdeği** ve **GNOME masaüstü ortamı** tercih ediyorum. Ancak, farklı çekirdekler ve masaüstü ortamları kullanmanız da mümkündür. Kendi kullanım ihtiyaçlarınıza göre **Linux çekirdekleri** ve **masaüstü ortamları** arasında değişiklik yaparak, sisteminizi daha verimli hale getirebilirsiniz.
-
-Bu, tamamen kişisel tercihlere ve kullanım senaryolarına bağlıdır, ve sisteminizin farklı konfigürasyonlarla nasıl çalıştığını test etmek de faydalı olabilir.
-
-## Notlar:
-
-> [!NOTE] **Config dosyaları için uyarı:**  
-> Eğer config dosyalarınızda `.txt` uzantısı varsa, **.txt** ibaresini kaldırın. Dosya ismi yalnızca **config** olmalıdır.
-
-> [!TIP] **Hazır Script Kullanımına Dair Uyarı:**  
-> Bu repoda **hazır bir kurulum scripti** sunmamamın nedeni, internet üzerinde çok sayıda hazır dotfile kurulum scripti bulunduğundan dolayı bunların çoğu genel bir kurulum sağlar. Ancak bu tür scriptler, istediğiniz özelleştirmeleri yapmanıza genellikle olanak tanımaz ve bazen istemediğiniz ya da gereksiz gördüğünüz uygulamalar da kurulabilir.  
-> 
-> Bu yüzden adım adım kurulumu tercih ettim. Bu yöntemle, her aşamada istediğiniz kurulumu yapabilir, örneğin: **wofi yerine rofi** kullanabilir, **kendi terminal emilatörünüzü** veya **dosya yöneticinizi** seçebilirsiniz. Bu sayede daha özelleştirilmiş bir ortam elde edersiniz.
+- 🎯 **Tek Komut Kurulum**: Tüm sistem bir script ile kurulur
+- 🔧 **Çakışma Önleme**: Paket çakışmaları otomatik tespit edilir
+- 💡 **Akıllı Kurulum**: Mevcut paketler atlanır
+- 📊 **Test Modu**: Neyin kurulacağını önceden görebilirsiniz
+- 🎨 **Modern UI**: Hyprland + Waybar + Wofi ile şık masaüstü
 
 ---
 
-# KURULUM
+## 🚀 Hızlı Kurulum
 
-## 0. Dosyaları Taşı
+### 📋 Sistem Gereksinimleri
 
-**dosya_tasi.sh** script'ini kullanarak dosyaları otomatik olarak taşıyabilirsiniz. Eğer bu script'i kullanmak istemiyorsanız, **dotfile** klasörü içerisindeki **alacritty**, **waybar**, **wlogout**, **wofi**, **hypr** klasörlerini **.config** klasörü içerisine taşıyın ve **.icons**, **.themes**, **.zshrc** dosya ve klasörlerini ise **home** dizinine taşıyın.
+- **Arch Linux** veya türevleri (EndeavourOS, Manjaro, ArcoLinux)
 
-Aşağıdaki komutları kullanarak dosyalarınızı otomatik olarak taşıyabilirsiniz:
+### ⚡ Otomatik Kurulum
+
+#### 1️⃣ **Test Modu** (Önerilen - Risk Yok)
 
 ```bash
-chmod +x dosya_tasi.sh
-./dosya_tasi.sh
+# Önce nelerin kurulacağını görmek için test modunu çalıştırın
+chmod +x test_mode.sh
+./test_mode.sh
+```
+
+**Test modu sadece analiz yapar, hiçbir değişiklik yapmaz!**
+
+**Test modu içinde onay vererek tam kurulumu başlata bilirsiniz.**
+
+#### 2️⃣ **Ana Kurulum**
+
+```bash
+# Ana kurulum scriptini başlatın
+chmod +x arch_dotfile_installer.sh
+./arch_dotfile_installer.sh
+```
+
+### 📖 **İsteğe Bağlı: Manuel Kurulum**
+
+Eğer adım adım manuel kurulum yapmak isterseniz, aşağıdaki **Manuel Kurulum Rehberi**'ni takip edebilirsiniz.
+
+---
+
+## 📦 Kurulacak Bileşenler
+
+### 🖥️ **Masaüstü Ortamı**
+
+- **Hyprland** - Modern Wayland compositor
+- **Waybar** - Özelleştirilebilir durum çubuğu
+- **Wofi** - Şık uygulama başlatıcı
+- **Alacritty** - GPU hızlandırmalı terminal
+- **Nemo** - Kullanıcı dostu dosya yöneticisi
+- **wlogout** - Güzel çıkış menüsü
+
+### 🛠️ **Geliştirme Araçları**
+
+- **VS Code** - Microsoft'un resmi kod editörü
+- **Git + base-devel** - Temel geliştirme araçları
+- **Python** (pip + virtualenv) - Python geliştirme ortamı
+- **Docker** - Konteyner teknolojisi
+- **Zsh + Oh My Zsh** - Gelişmiş kabuk ve eklentiler
+
+### 🌐 **Uygulamalar**
+
+- **Brave Browser** - Gizlilik odaklı web tarayıcısı
+- **LibreOffice** - Ücretsiz ofis paketi (Türkçe destekli)
+- **Flatpak** - Evrensel uygulama yöneticisi
+
+### 🎨 **Görsel & Fontlar**
+
+- **Noto Fonts** - Google'ın evrensel font ailesi
+- **Font Awesome** - İkon fontları
+- **Arimo Nerd Font** - Geliştirici fontları
+- **Microsoft Fonts** - MS Office uyumluluğu
+
+---
+
+## 📁 Kurulum Sonrası Dosya Yapısı
+
+```
+~/.config/
+├── alacritty/      # Terminal ayarları
+├── waybar/         # Durum çubuğu yapılandırması  
+├── hypr/           # Hyprland masaüstü ayarları
+├── wofi/           # Uygulama başlatıcı temaları
+├── wlogout/        # Çıkış menüsü ayarları
+└── nemo/           # Dosya yöneticisi ayarları
+
+~/
+├── .icons/         # Özel simge temaları
+├── .themes/        # GTK temaları
+├── .zshrc          # Zsh yapılandırması
+└── .oh-my-zsh/     # Oh My Zsh ve eklentiler
 ```
 
 ---
+
+# 📖 Manuel Kurulum Rehberi
+
+> **Not**: Manuel kurulum yapmak zorunda değilsiniz! Yukarıdaki otomatik scriptler çoğu kullanıcı için yeterlidir.
 
 ## 1. Sistemi Güncelle
 
@@ -85,9 +154,12 @@ rm -rf yay/
 
 ---
 
-## 4. Google Chrome Kurulumu
+## 4. Tarayıcı Kurulumu
 
 ```bash
+# Brave yada chrome
+sudo pacman -S brave 
+
 yay -S google-chrome
 ```
 
@@ -117,7 +189,7 @@ yay -S sublime-text-4
 
 ### 5.1 Key Bindings (Klavye Kısayolları)
 
-1. Sublime Text’te **Preferences → Key Bindings** menüsünü açın.  
+1. Sublime Text’te **Preferences → Key Bindings** menüsünü açın.
 2. Sağ taraftaki kullanıcı dosyasına aşağıdaki JSON’u ekleyin (veya var olan benzer satırları güncelleyin):
 
 ```json
@@ -130,19 +202,19 @@ yay -S sublime-text-4
 
 Kaydedip kapattıktan sonra
 
-- **Ctrl + ↓ / Ctrl + ↑** ile satır satır seçim yapabilirsiniz.  
+- **Ctrl + ↓ / Ctrl + ↑** ile satır satır seçim yapabilirsiniz.
 - **Ctrl + Shift + B** ile çalışan **build** işlemini sonlandırabilirsiniz.
 
 ---
 
 ### 5.2 Tema & Renk Şeması
 
-1. **Package Control** kurulu değilse `Tools → Install Package Control` ile yükleyin.  
-2. **Ctrl + Shift + P** → `Package Control: Install Package` komutunu açın ve **Brogrammer** yazıp **Enter**’a basın.  
+1. **Package Control** kurulu değilse `Tools → Install Package Control` ile yükleyin.
+2. **Ctrl + Shift + P** → `Package Control: Install Package` komutunu açın ve **Brogrammer** yazıp **Enter**’a basın.
 
 **Tema seçimi**
 
-- **Preferences → Color Scheme…** menüsünden **Brogrammer**’ı,  
+- **Preferences → Color Scheme…** menüsünden **Brogrammer**’ı,
 - **Preferences → Select Theme…** menüsünden **Adaptive**’i seçin.
 
 Arayüzünüz artık koyu‑renkli, renkli ikonlu ve modern bir görünüme kavuşur.
@@ -154,38 +226,13 @@ Arayüzünüz artık koyu‑renkli, renkli ikonlu ve modern bir görünüme kavu
 > **Nasıl kurulur?**  
 > `Ctrl + Shift + P` → `Package Control: Install Package` → eklenti adını yazıp **Enter**.
 
-| Eklenti Adı             | Ne İşe Yarar?                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| **Markdown Preview**    | `Ctrl + B` ile aynı dizinde `.html` oluşturur; **Preview in Browser** komutuyla canlı ön‑izleme sunar. |
-| **SideBarEnhancements** | Dosya & klasör sağ‑tık menüsüne ek eylemler kazandırır.                                                |
-| **BracketHighlighter**  | Parantez, köşeli ve süslü parantez eşlerini vurgular.                                                  |
-| **A File Icon**         | Dosya türlerine göre renkli ikonlar gösterir.                                                          |
-| **AutoFileName**        | Dosya yolu/adı tamamlama sağlar.                                                                       |
-
----
-
-### 5.4 Otomatik Tamamlama (Python Odaklı)
-
-| Paket           | Açıklama                                                                                         |
-| --------------- | ------------------------------------------------------------------------------------------------ |
-| **LSP**         | Dil Sunucusu Protokolü ile akıllı tamamlama, hata tespiti, sembol gezintisi sağlar.              |
-| **LSP‑pyright** | Python 3 için hızlı & hafif dil sunucusu; type‑checking, refactor, oto‑import özellikleri sunar. |
-
-1. `Ctrl + Shift + P` → **Package Control: Install Package** → **LSP**  
-2. Aynı adımla **LSP-pyright** paketini yükleyin.  
-3. **Preferences → Package Settings → LSP → Servers** dosyasına girerek `pyright` sunucusunun etkin olduğundan emin olun.
-
----
-
-### 5.5 Kısayol: Markdown Ön‑İzleme Hızlı Kullanım
-
-| Kısayol / Komut                   | Etki                                                                       |
-| --------------------------------- | -------------------------------------------------------------------------- |
-| **Ctrl + B**                      | Aktif `.md` dosyasını `.html`’e derler ve tarayıcıda açar.                 |
-| **Ctrl + Shift + P → “Preview…”** | “Markdown Preview: Preview in Browser” komutuyla anlık ön‑izleme başlatır. |
-
-Bu adımlarla Sublime Text, verimli bir Markdown ve Python geliştirme ortamına dönüşmüş olur.  
-Herhangi bir ek özelleştirme ihtiyacında yine buradayım!
+| Eklenti Adı | Ne İşe Yarar? |
+| --- | --- |
+| **Markdown Preview** | `Ctrl + B` ile aynı dizinde `.html` oluşturur; **Preview in Browser** komutuyla canlı ön‑izleme sunar. |
+| **SideBarEnhancements** | Dosya & klasör sağ‑tık menüsüne ek eylemler kazandırır. |
+| **BracketHighlighter** | Parantez, köşeli ve süslü parantez eşlerini vurgular. |
+| **A File Icon** | Dosya türlerine göre renkli ikonlar gösterir. |
+| **AutoFileName** | Dosya yolu/adı tamamlama sağlar. |
 
 ---
 
@@ -223,18 +270,19 @@ yay -S xdg-desktop-portal-hyprland-git
 ### Ses Sorunu Çözümü - Arch Linux
 
 1. **Ses Sistemlerini Kontrol Etme:**
-   Aşağıdaki komutu çalıştırarak sisteminizde hangi ses sistemlerinin aktif olduğunu kontrol edin:
-   
-   ```bash
-   ps -e | grep -E 'pulse|pipe'
-   
-     31196 ?        00:00:00 pipewire
-     31335 ?        00:00:00 pulseaudio
-   
-   Eğer burdaki gibi PulseAudio ve PipeWire aynı anda çalışıyorsa, çakışmaya sebep olabilir.
-   ```
-
-2. Eğer çakışan iki sistem varsa, bunlardan birini kaldırın. 
+  Aşağıdaki komutu çalıştırarak sisteminizde hangi ses sistemlerinin aktif olduğunu kontrol edin:
+  
+  ```bash
+  ps -e | grep -E 'pulse|pipe'
+  
+    31196 ?        00:00:00 pipewire
+    31335 ?        00:00:00 pulseaudio
+  
+  Eğer burdaki gibi PulseAudio ve PipeWire aynı anda çalışıyorsa, çakışmaya sebep olabilir.
+  ```
+  
+2. Eğer çakışan iki sistem varsa, bunlardan birini kaldırın.
+  
 
         **Örneğin**, PulseAudio'yu kaldırmak için(PulseAudio GNOME masaüstü ortamında         gereklidir):
 
@@ -334,7 +382,7 @@ Fazladan masaüstü portal paketlerini temizlemek isterseniz aşağıdaki adıml
 pacman -Q | grep xdg-desktop-portal-
 ```
 
-Çıktısı: 
+Çıktısı:
 
 ```bash
 xdg-desktop-portal-gnome 48.0-2
@@ -697,17 +745,3 @@ cp -r configs/.icons  "$HOME/
 Ardından, ***nwg-look*** programını çalıştırarak tema ve ikonları değiştirebilirsiniz.
 
 ---
-
-## 19. Gereksiz paketleri kaldır(EndeavourOS gnome için):
-
-```bash
-sudo pacman -Rn gnome-console xterm gnome-terminal meld gnome-text-editor gnome-weather
-sudo pacman -Rndd nautilus
-sudo pacman -Rnc firefox firefox-i18n-tr
-```
-
----
-
-Bu adımları takip ederek sisteminizi işlevsel, özelleştirilmiş ve güncel bir hale getirebilirsiniz. Arch Linux'un sunduğu esneklik sayesinde, kendi ihtiyaçlarınıza en uygun yapılandırmayı oluşturabilirsiniz. Unutmayın, bu süreç bazen zorlu olabilir, ancak elde edeceğiniz sonuçlar tamamen kişisel tercihleriniz doğrultusunda özelleştirilmiş güçlü bir sistem olacaktır.
-
-Herhangi bir sorunla karşılaşırsanız, Arch topluluğu ve ilgili kaynaklar size yardımcı olmaktan mutluluk duyacaktır. Başarılar ve keyifli bir sistem deneyimi dilerim!
