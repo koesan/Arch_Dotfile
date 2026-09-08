@@ -854,14 +854,20 @@ setup_paths() {
 #
 # hwmonN numaraları her açılışta değişebilir; bu yüzden numara değil, sensör
 # ADI (k10temp / coretemp / zenpower) üzerinden kararlı yol bulunuyor.
-# Bulunamazsa hiçbir şey yazılmaz — waybar o durumda thermal_zone0'a düşer ve
-# modül yine çalışır.
+#
+# Sıra: bilinen CPU sensörü → acpitz → herhangi bir hwmon girdisi.
+# Son basamak şart: waybar'ın kendi yedeği olan
+# /sys/class/thermal/thermal_zone0/temp her makinede YOKTUR ve olmadığında
+# waybar sıcaklık modülünü sessizce devre dışı bırakır.
 setup_waybar_sensor() {
     step "CPU sıcaklık sensörü aranıyor"
     local cfg="$HOME/.config/waybar/config"
     [[ -f "$cfg" ]] || { warning "waybar/config yok, atlandı"; return 1; }
 
     local hw name path=""
+
+    # 1) Bilinen CPU sensörleri — en doğru okuma.
+    #    k10temp/zenpower: AMD · coretemp: Intel
     for hw in /sys/class/hwmon/hwmon*; do
         [[ -r "$hw/name" ]] || continue
         name=$(<"$hw/name")
@@ -877,8 +883,45 @@ setup_waybar_sensor() {
         esac
     done
 
+    # 2) ACPI termal bölgesi. Sanal makinelerde ve bazı dizüstülerde CPU
+    #    sürücüsü hwmon yayımlamaz, tek kaynak budur.
     if [[ -z "$path" ]]; then
-        info "Bilinen CPU sensörü bulunamadı; waybar thermal_zone0 kullanacak"
+        for hw in /sys/class/hwmon/hwmon*; do
+            [[ -r "$hw/name" ]] || continue
+            [[ "$(<"$hw/name")" == "acpitz" ]] || continue
+            if [[ -r "$hw/temp1_input" ]]; then
+                path=$(readlink -f "$hw/temp1_input")
+                log "  sensör bulundu: acpitz → $path"
+                break
+            fi
+        done
+    fi
+
+    # 3) Son çare: okunabilir HERHANGİ bir sıcaklık girdisi.
+    #    NEDEN GEREKLİ: hiçbir yol yazılmazsa waybar
+    #    /sys/class/thermal/thermal_zone0/temp'e düşer — ve bu dosya her
+    #    makinede YOKTUR. Bu depoyu geliştiren makinede /sys/class/thermal
+    #    yalnızca cooling_device* içeriyor; waybar da modülü sessizce devre
+    #    dışı bırakıyordu ("Disabling module temperature"). Yanlış çipi
+    #    göstermek, modülün hiç çalışmamasından iyidir.
+    if [[ -z "$path" ]]; then
+        local any
+        for any in /sys/class/hwmon/hwmon*/temp1_input; do
+            if [[ -r "$any" ]]; then
+                path=$(readlink -f "$any")
+                name=$(<"$(dirname "$any")/name" 2>/dev/null || echo "?")
+                warning "CPU sensörü bulunamadı; '$name' kullanılacak (sıcaklık CPU'ya ait olmayabilir)"
+                break
+            fi
+        done
+    fi
+
+    if [[ -z "$path" ]]; then
+        if [[ -r /sys/class/thermal/thermal_zone0/temp ]]; then
+            info "Sensör yolu yazılmadı; waybar thermal_zone0 kullanacak"
+        else
+            warning "Hiçbir sıcaklık sensörü bulunamadı; waybar sıcaklık modülünü devre dışı bırakacak"
+        fi
         return 0
     fi
 
@@ -946,12 +989,24 @@ detect_themes() {
     done
 
     # --- İmleç teması -------------------------------------------------------
-    for cand in /usr/share/icons/catppuccin-mocha-*-cursors "$HOME/.icons"/catppuccin-mocha-*-cursors; do
-        if [[ -d "$cand" ]]; then
-            CURSOR_THEME_NAME="$(basename "$cand")"
-            break
-        fi
+    # SIRA ÖNEMLİ. Eskiden burada yalnızca `catppuccin-mocha-*-cursors` globu
+    # vardı. catppuccin-cursors-mocha paketi on altı renk varyantı birden kurar
+    # ve kabuk globu alfabetik sıraladığı için HER makinede "blue" seçiliyordu:
+    # imleç mavi çıkıyordu. Artık önce istenen koyu (siyah) varyant aranıyor.
+    local cursor_pref
+    for cursor_pref in catppuccin-mocha-dark-cursors catppuccin-mocha-light-cursors; do
+        icon_dir_exists "$cursor_pref" && { CURSOR_THEME_NAME="$cursor_pref"; break; }
     done
+    # Koyu/açık varyant yoksa (paket kısmi kurulmuş olabilir) herhangi bir
+    # Catppuccin imleci hiç imleç olmamasından iyidir.
+    if [[ -z "$CURSOR_THEME_NAME" ]]; then
+        for cand in /usr/share/icons/catppuccin-mocha-*-cursors "$HOME/.icons"/catppuccin-mocha-*-cursors; do
+            if [[ -d "$cand" ]]; then
+                CURSOR_THEME_NAME="$(basename "$cand")"
+                break
+            fi
+        done
+    fi
     if [[ -z "$CURSOR_THEME_NAME" ]]; then
         for cand in Adwaita default; do
             [[ -d "/usr/share/icons/$cand/cursors" ]] && { CURSOR_THEME_NAME="$cand"; break; }

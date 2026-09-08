@@ -227,10 +227,21 @@ window#waybar.empty #window {
 #memory        { color: @mauve; }
 #temperature   { color: @peach; }
 #battery       { color: @green; }
-/* Kahve düğmesi. Kapalıyken soluk gri, açıkken DOLU sarı ada:
-   yalnızca simge rengi değişseydi "açık mı kapalı mı" ayrımı bir bakışta
-   seçilmiyordu ve düğme açık sanılıp ekran kararıyordu. */
-#custom-caffeine { color: @overlay1; }
+/* Kahve düğmesi — yalnızca SİMGE RENGİ değişir (kapalı: soluk gri,
+   açık: sarı). Kutu rengi diğer modüllerle aynı kalır.
+
+   font-family neden ayrı: bu Material Design glifi (󰅶 U+F0176)
+   JetBrainsMono Nerd Font'ta 19.2 px advance ile tanımlı ama 27 px genişlikte
+   çiziliyor — yani kendi yerleşim kutusundan sağa taşıyor. Simgeyle birlikte
+   metin de yazan modüllerde bu fark yazının boşluğuna denk geldiği için
+   görünmüyor; TEK BAŞINA simge olan bu modülde simge sağa kaymış duruyordu.
+   "Propo" yüzünde aynı glifin advance'i 26.6 px, yani çizim genişliğiyle
+   örtüşüyor ve simge kutunun tam ortasına oturuyor. */
+#custom-caffeine {
+    color: @overlay1;
+    font-family: "JetBrainsMono Nerd Font Propo", "Symbols Nerd Font",
+                 "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
+}
 #privacy       { color: @red; }
 
 /* ── Durum sınıfları ─────────────────────────────────────────────────────── */
@@ -275,9 +286,7 @@ window#waybar.empty #window {
 }
 
 #custom-caffeine.activated {
-    background-color: @yellow;
-    color: @crust;
-    font-weight: 700;
+    color: @yellow;
 }
 
 /* ── Sistem tepsisi ──────────────────────────────────────────────────────── */

@@ -80,7 +80,7 @@ Masaüstünün tamamı tek bir palet kullanır: **Catppuccin Mocha**.
 | Alacritty | `configs/alacritty/themes/catppuccin_mocha.toml` |
 | GTK 3 / GTK 4 | Kurulum sırasında `catppuccin-gtk-theme-mocha` (AUR) |
 | Qt 5 / Qt 6 | Kurulum sırasında üretilen qt5ct/qt6ct renk şeması |
-| İmleç | Kurulum sırasında `catppuccin-cursors-mocha` (AUR) |
+| İmleç | Kurulum sırasında `catppuccin-cursors-mocha` (AUR) → **koyu (siyah) varyant** |
 | Simgeler | `dracula-icons-main` (depoda gömülü) |
 
 **Tema otomatik indirilir.** GTK teması ve imleçler AUR'dan kurulur. AUR'a
@@ -88,6 +88,12 @@ erişilemezse veya `--no-aur` kullanılırsa kurulum durmaz: depoda gömülü ol
 `Andromeda-gtk` temasına ve `Adwaita` imleçlerine düşülür. Script her zaman
 **gerçekten kurulu olan** temanın adını yazar — var olmayan bir tema adı
 hiçbir ayar dosyasına yazılmaz.
+
+İmleç renginde bir ayrıntı: `catppuccin-cursors-mocha` on altı renk varyantını
+birden kurar. Kurulum betiği bunlar arasından `catppuccin-mocha-dark-cursors`
+(siyah) varyantını seçer. Başka bir renk isterseniz tek yapmanız gereken
+`~/.icons/default/index.theme` içindeki `Inherits=` satırını ve
+`~/.config/hypr/lua/cursor.lua` içindeki tema adını değiştirmek.
 
 Paleti değiştirmek isterseniz başlangıç noktası `configs/hypr/lua/theme.lua`
 dosyasıdır; her stil dosyasının başında da kendi palet bloğu bulunur.
@@ -274,6 +280,23 @@ caffeine active    # açıksa çıkış kodu 0
 
 ---
 
+## 🎞️ Animasyonlar
+
+Pencere açılış/kapanış, workspace geçişi ve katman animasyonları **kapalıdır**
+(`configs/hypr/lua/look.lua` → `animations.enabled = false`). Her şey anında
+olur; girdi gecikmesi hissi yoktur ve zayıf GPU'larda kare atlaması olmaz.
+
+Geri açmak için tek satır yeterli — eğri ve animasyon tanımları dosyada
+olduğu gibi duruyor, yeniden yazmanız gerekmez:
+
+```lua
+animations = {
+    enabled = true,
+},
+```
+
+---
+
 ## 📁 Kurulum sonrası dosya yapısı
 
 ```
@@ -284,7 +307,7 @@ caffeine active    # açıksa çıkış kodu 0
 │   │   ├── theme.lua         # Catppuccin Mocha paleti (renklerin tek kaynağı)
 │   │   ├── env.lua           # ortam değişkenleri
 │   │   ├── monitors.lua      # ekran düzeni (otomatik algılama)
-│   │   ├── look.lua          # boşluk, kenarlık, animasyon
+│   │   ├── look.lua          # boşluk, kenarlık, animasyon (animasyon KAPALI)
 │   │   ├── input.lua         # klavye, fare, touchpad
 │   │   ├── binds.lua         # kısayollar
 │   │   ├── rules.lua         # pencere ve katman kuralları

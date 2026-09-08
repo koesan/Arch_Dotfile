@@ -265,12 +265,16 @@
         // sıcaklığı CPU diye gösteriliyordu. Sonraki denemede sabit bir PCI
         // yolu yazılmıştı; o da yalnızca tek bir makinede doğruydu.
         //
-        // Doğru çözüm: yol vermemek. Waybar hiçbir hwmon anahtarı yoksa
-        // /sys/class/thermal/thermal_zone0 üzerinden okur — bu her makinede
-        // vardır. Kurulum betiği k10temp / coretemp / zenpower sensörünü
-        // bulabilirse aşağıya "hwmon-path" satırını ekleyerek daha doğru
-        // bir okuma sağlar; bulamazsa bu blok olduğu gibi kalır ve modül
-        // yine çalışır.
+        // Bu yüzden depoda hiçbir yol YAZMIYOR: donanıma bağlı değer
+        // kurulum anında yazılır (setup_waybar_sensor → "hwmon-path" satırı).
+        //
+        // DİKKAT: waybar hiçbir hwmon anahtarı yoksa
+        // /sys/class/thermal/thermal_zone0 üzerinden okur — ve o dosya her
+        // makinede YOKTUR (ör. bu depoyu geliştiren makinede /sys/class/thermal
+        // yalnızca cooling_device* içeriyor). O durumda waybar modülü sessizce
+        // devre dışı bırakır. Kurulum betiği bu yüzden sırayla k10temp /
+        // zenpower / coretemp → acpitz → herhangi bir hwmon girdisi arar ve
+        // bulduğunu buraya yazar.
         //
         // Kendi yolunuzu görmek için:
         //   for i in /sys/class/hwmon/hwmon*/temp*_input; do \
