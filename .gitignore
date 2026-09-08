@@ -1,0 +1,9 @@
+# Makineye özel Hyprland ayarları — her bilgisayarda farklıdır, paylaşılmaz.
+# Kurulum betiği bu dosyaların üzerine yazmaz.
+configs/hypr/lua/local.lua
+
+# Kurulum betiğinin ürettiği dosya (imleç teması makineye göre belirlenir).
+configs/hypr/lua/cursor.lua
+
+# Kurulum günlükleri
+*.log

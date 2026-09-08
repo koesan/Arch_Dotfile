@@ -1,89 +1,103 @@
-/* Importing pywal colors */
-@import '../../.config/wlogout/wallust/colors-waybar.css';
+/* ═══════════════════════════════════════════════════════════════════════════
+   wlogout — oturum menüsü
+   Palet: Catppuccin Mocha (waybar, rofi, mako, hyprlock ile aynı)
+   Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
 
-/* Genel pencere stil ayarları */
+   Eski sürümdeki iki sorun burada giderildi:
+
+   1) Dosya `@import '../../.config/wlogout/wallust/colors-waybar.css'`
+      satırıyla başlıyordu. Bu göreli yol yalnızca ~/.config/wlogout içinden
+      çalışıyordu, üstelik getirdiği palet AÇIK renkliydi (wallust şablonu) —
+      koyu masaüstünde okunmuyordu. wallust kurulu olmadığı için dosya
+      çoğu makinede hiç bulunamıyor ve wlogout stilsiz açılıyordu.
+      Artık dış bağımlılık yok.
+
+   2) Simgeler PNG idi ve tek boyutta gömülüydü; HiDPI ekranda bulanıklaşıyordu.
+      Artık icons-svg/ altındaki vektör simgeler kullanılıyor. GTK'nın SVG
+      okuyabilmesi için `librsvg` gerekir — kurulum betiğinin paket listesinde.
+
+   wlogout GTK3 CSS kullanır: değişken (var()) yoktur, renkler doğrudan
+   yazılır; box-shadow ve transform desteklenmez.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Pencere ──────────────────────────────────────────────────────────────
+   Arka plan yarı saydam; Hyprland katman kuralı bunu bulanıklaştırıyor
+   (bkz. hypr/lua/rules.lua → namespace "wlogout"). */
 window {
-    font-family: Fira Code Medium; /* Yazı tipi */
-    font-size: 16pt; /* Yazı boyutu */
-    color: #cdd6f4; /* Yazı rengi */
-    background-color: rgba(30, 30, 46, 0.6); /* Yarı saydam arka plan */
+    font-family: "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
+    font-size: 15pt;
+    font-weight: 500;
+    color: #cdd6f4;                      /* text  */
+    background-color: rgba(17, 17, 27, 0.75);  /* crust @ %75 */
 }
 
-/* Butonlar için varsayılan stil ayarları */
+/* ── Düğmeler ─────────────────────────────────────────────────────────────
+   Her düğme bir "kart": koyu yüzey, ince kenarlık, yuvarlatılmış köşe.
+   Simge arka plan resmi olarak çizilir, metin altında kalır. */
 button {
-    background-repeat: no-repeat;            /* Arka plan resmi tekrar etmesin */
-    background-position: center;             /* Arka plan resmi ortalansın */
-    background-size: 20%;                    /* Arka plan resmi boyutu */
-    background-color: rgba(200, 220, 255, 0); /* Şeffaf arka plan */
-    border-radius: 50px;                     /* Yuvarlak butonlar */
+    margin: 10px;
+    padding: 0;
+    border: 2px solid #313244;           /* surface0 */
+    border-radius: 16px;
+    background-color: rgba(30, 30, 46, 0.85);   /* base @ %85 */
+    color: #cdd6f4;
+
+    background-repeat: no-repeat;
+    background-position: center 38%;
+    background-size: 30%;
+
+    /* GTK3'te geçiş yalnızca renk/boyut için çalışır; hareket yok. */
+    transition: background-color 120ms ease-in-out,
+                border-color     120ms ease-in-out,
+                background-size  120ms ease-in-out;
 }
 
-/* Butona odaklandığında (focus) stil ayarları */
-button:focus {
-    background-size: 25%;                    /* Simge boyutunu büyüt */
-    border: 0px;                             /* Kenarlık yok */
+/* Odak (klavye ile gezinme) ve fare üzerinde aynı vurgu:
+   accent zemin + koyu simge/metin. Simgenin koyu varyantı -hover.svg. */
+button:focus,
+button:hover,
+button:active {
+    background-color: #89b4fa;           /* blue = accent */
+    border-color: #b4befe;               /* lavender */
+    color: #11111b;                      /* crust */
+    background-size: 34%;
 }
 
-/* Buton üzerine gelindiğinde (hover) stil ayarları */
-button:hover {
-    background-color: rgb(145, 215, 227);    /* Açık mavi arka plan */
-    color: #1e1e2e;                          /* Koyu yazı rengi */
-    background-size: 40%;                    /* Simgeyi daha da büyüt */
-    margin: 5px;                             /* Buton etrafında boşluk bırak */
-    border-radius: 50px;                     /* Daire formunu koru */
+/* Düğme metni simgenin altında. */
+button label {
+    margin-bottom: 16px;
 }
 
-/* Buton içindeki simgeyi büyütmek için stil */
-button span {
-    font-size: 1.2em; /* Simge boyutunu artır */
-}
+/* ── Simgeler ─────────────────────────────────────────────────────────────
+   Yollar bu CSS dosyasına GÖRELİdir; wlogout config dizini bir bütün olarak
+   kopyalandığı için her makinede çözülür. */
 
-/* Butonların simgeleri için arka plan ayarları */
+#lock       { background-image: image(url("./icons-svg/lock.svg")); }
+#lock:hover, #lock:focus
+            { background-image: image(url("./icons-svg/lock-hover.svg")); }
 
-/* Lock butonu ve hover efekti */
-#lock {
-    background-image: image(url("./icons/lock.png")); /* Kilit simgesi */
-}
-#lock:hover {
-    background-image: image(url("./icons/lock-hover.png")); /* Kilit simgesine hover efekti */
-}
+#logout     { background-image: image(url("./icons-svg/logout.svg")); }
+#logout:hover, #logout:focus
+            { background-image: image(url("./icons-svg/logout-hover.svg")); }
 
-/* Logout butonu ve hover efekti */
-#logout {
-    background-image: image(url("./icons/logout.png")); /* Çıkış simgesi */
-}
-#logout:hover {
-    background-image: image(url("./icons/logout-hover.png")); /* Çıkış simgesine hover efekti */
-}
+#suspend    { background-image: image(url("./icons-svg/suspend.svg")); }
+#suspend:hover, #suspend:focus
+            { background-image: image(url("./icons-svg/suspend-hover.svg")); }
 
-/* Suspend butonu ve hover efekti */
-#suspend {
-    background-image: image(url("./icons/sleep.png")); /* Uyku simgesi */
-}
-#suspend:hover {
-    background-image: image(url("./icons/sleep-hover.png")); /* Uyku simgesine hover efekti */
-}
+#hibernate  { background-image: image(url("./icons-svg/hibernate.svg")); }
+#hibernate:hover, #hibernate:focus
+            { background-image: image(url("./icons-svg/hibernate-hover.svg")); }
 
-/* Shutdown butonu ve hover efekti */
-#shutdown {
-    background-image: image(url("./icons/power.png")); /* Güç simgesi */
-}
-#shutdown:hover {
-    background-image: image(url("./icons/power-hover.png")); /* Güç simgesine hover efekti */
-}
+#reboot     { background-image: image(url("./icons-svg/reboot.svg")); }
+#reboot:hover, #reboot:focus
+            { background-image: image(url("./icons-svg/reboot-hover.svg")); }
 
-/* Reboot butonu ve hover efekti */
-#reboot {
-    background-image: image(url("./icons/restart.png")); /* Yeniden başlatma simgesi */
-}
-#reboot:hover {
-    background-image: image(url("./icons/restart-hover.png")); /* Yeniden başlatma simgesine hover efekti */
-}
+#shutdown   { background-image: image(url("./icons-svg/shutdown.svg")); }
+#shutdown:hover, #shutdown:focus
+            { background-image: image(url("./icons-svg/shutdown-hover.svg")); }
 
-/* Hibernate butonu ve hover efekti */
-#hibernate {
-    background-image: image(url("./icons/hibernate.png")); /* Hibernasyon simgesi */
-}
-#hibernate:hover {
-    background-image: image(url("./icons/hibernate-hover.png")); /* Hibernasyon simgesine hover efekti */
+/* Kapat düğmesi tehlikeli işlem: üzerine gelince kırmızı. */
+#shutdown:hover, #shutdown:focus {
+    background-color: #f38ba8;           /* red */
+    border-color: #eba0ac;               /* maroon */
 }

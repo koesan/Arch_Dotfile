@@ -1,3 +1,15 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  Alacritty — terminal
+#  Palet: Catppuccin Mocha (themes/catppuccin_mocha.toml)
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  Not: Alacritty 0.14'ten beri `import` anahtarı [general] tablosunun
+#  altındadır; bu yüzden dosyanın SONUNDA, [general] başlığının ardında yer
+#  alır. Yukarı taşımayın — orada geçersiz olur.
+#
+#  Tema değiştirmek için themes/ dizinindeki dosyalardan birini seçin ve
+#  dosyanın sonundaki import satırını güncelleyin.
+# ═══════════════════════════════════════════════════════════════════════════
 
 ## ENVIRONMENT ----------------------------------------------------
 
@@ -39,6 +51,34 @@ lines = 26
 [window.padding]
 x = 12
 y = 12
+
+## FONT -----------------------------------------------------------
+## JetBrainsMono Nerd Font: waybar, rofi, mako ve hyprlock ile aynı yazı tipi.
+## Kurulu değilse Alacritty sistem varsayılanına düşer ve Nerd Font simgeleri
+## kutu görünür — kurulum betiği ttf-jetbrains-mono-nerd paketini kurar.
+[font]
+size = 11.0
+
+[font.normal]
+family = "JetBrainsMono Nerd Font"
+style  = "Regular"
+
+[font.bold]
+family = "JetBrainsMono Nerd Font"
+style  = "Bold"
+
+[font.italic]
+family = "JetBrainsMono Nerd Font"
+style  = "Italic"
+
+[font.bold_italic]
+family = "JetBrainsMono Nerd Font"
+style  = "Bold Italic"
+
+## Satır/sütun aralığı: 0 = yazı tipinin kendi ölçüsü.
+[font.offset]
+x = 0
+y = 2
 
 ## SCROLLING ------------------------------------------------------
 [scrolling]
@@ -114,4 +154,4 @@ ipc_socket = true
 ## GENERAL --------------------------------------------------------
 
 ## Import additional configuration files.
-import = ["~/.config/alacritty/themes/blood_moon.toml"]
+import = ["~/.config/alacritty/themes/catppuccin_mocha.toml"]

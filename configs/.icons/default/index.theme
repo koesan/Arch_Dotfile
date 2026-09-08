@@ -1,5 +1,21 @@
-# This file is written by nwg-look. Do not edit.
+# ═══════════════════════════════════════════════════════════════════════════
+#  Varsayılan imleç teması
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  Bu dosya XCursor'un "default" temasının hangi temaya devredeceğini söyler.
+#  XWayland uygulamaları ve GTK dışı araçlar imleci buradan bulur.
+#
+#  ÖNEMLİ: Eski sürümde burada `Inherits=Qogir` yazıyordu ama qogir-icon-theme
+#  kurulum betiğinin paket listesinde değildi. Tema kurulu olmayan bir
+#  bilgisayarda imleç "X" şeklinde eski bitmap imlece düşüyordu.
+#
+#  Aşağıdaki liste sırayla denenir; ilk KURULU olan kullanılır. Kurulum
+#  betiği (setup_cursor) Catppuccin imleçlerini kurabilirse bu dosyayı
+#  o temayla yeniden yazar, kuramazsa Adwaita geçerli olur — adwaita-icon-theme
+#  paket listesinde olduğu için her zaman vardır.
+# ═══════════════════════════════════════════════════════════════════════════
+
 [Icon Theme]
 Name=Default
 Comment=Default Cursor Theme
-Inherits=Qogir
+Inherits=catppuccin-mocha-dark-cursors,Adwaita

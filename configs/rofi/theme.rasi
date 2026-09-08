@@ -1,0 +1,172 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   rofi teması — Catppuccin Mocha
+   Arch_Dotfile
+
+   Waybar, mako, wlogout ve hyprlock ile aynı paleti kullanır.
+   Paleti değiştirmek için yalnızca aşağıdaki * bloğunu düzenleyin.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+* {
+    /* ── Palet ─────────────────────────────────────────────────────────── */
+    base:       #1e1e2e;
+    mantle:     #181825;
+    crust:      #11111b;
+    surface0:   #313244;
+    surface1:   #45475a;
+    overlay0:   #6c7086;
+    subtext0:   #a6adc8;
+    text-col:   #cdd6f4;
+
+    blue:       #89b4fa;
+    mauve:      #cba6f7;
+    green:      #a6e3a1;
+    red:        #f38ba8;
+
+    /* ── Semantik roller ───────────────────────────────────────────────── */
+    background-color:   transparent;
+    text-color:         @text-col;
+    accent:             @blue;
+
+    /* Panelin arka planı hafif saydam; Hyprland katman kuralı bunu
+       bulanıklaştırıyor (bkz. hypr/lua/rules.lua). */
+    bg-panel:           #1e1e2ef2;
+    bg-input:           @mantle;
+    bg-selected:        @surface0;
+
+    margin:  0;
+    padding: 0;
+    spacing: 0;
+}
+
+window {
+    location:         center;
+    anchor:           center;
+    width:            36em;
+    /* Sabit yükseklik vermiyoruz: liste kısa olduğunda pencere de kısalır. */
+
+    background-color: @bg-panel;
+    border:           1px;
+    border-color:     @surface0;
+    border-radius:    14px;
+    padding:          14px;
+}
+
+mainbox {
+    /* mode-switcher listede: Control+Tab ile modlar arası geçerken hangi modda
+       olduğunuz görünsün. Listede olmasaydı aşağıdaki `button` kuralları
+       hiçbir zaman çizilmezdi. */
+    children: [ inputbar, message, listview, mode-switcher ];
+    spacing:  12px;
+}
+
+/* ── Arama kutusu ──────────────────────────────────────────────────────── */
+inputbar {
+    children:         [ prompt, entry ];
+    background-color: @bg-input;
+    border:           1px;
+    border-color:     @surface0;
+    border-radius:    10px;
+    padding:          10px 12px;
+    spacing:          10px;
+}
+
+prompt {
+    text-color: @accent;
+    vertical-align: 0.5;
+}
+
+entry {
+    placeholder:            "Ara...";
+    placeholder-color:      @overlay0;
+    text-color:             @text-col;
+    cursor:                 text;
+    vertical-align:         0.5;
+}
+
+/* ── Liste ─────────────────────────────────────────────────────────────── */
+listview {
+    lines:          9;
+    columns:        1;
+    fixed-height:   false;
+    scrollbar:      true;
+    spacing:        3px;
+    cycle:          true;
+    dynamic:        true;
+}
+
+scrollbar {
+    handle-color:  @surface1;
+    handle-width:  4px;
+    border-radius: 4px;
+    background-color: @mantle;
+}
+
+element {
+    padding:       9px 12px;
+    spacing:       12px;
+    border-radius: 9px;
+    cursor:        pointer;
+}
+
+element normal.normal   { text-color: @subtext0; }
+element alternate.normal { text-color: @subtext0; }
+
+/* Seçili satır: dolgu + vurgu rengi. Yalnızca renk değil, sol kenarda da
+   belirgin bir işaret var — renk körlüğünde de ayırt edilebilsin diye. */
+element selected.normal {
+    background-color: @bg-selected;
+    text-color:       @accent;
+    border:           0 0 0 3px;
+    border-color:     @accent;
+}
+
+element normal.urgent,
+element alternate.urgent  { text-color: @red; }
+element selected.urgent    { background-color: @red;   text-color: @crust; }
+
+element normal.active,
+element alternate.active  { text-color: @green; }
+element selected.active    { background-color: @green; text-color: @crust; }
+
+element-icon {
+    size:           1.4em;
+    vertical-align: 0.5;
+    cursor:         inherit;
+}
+
+element-text {
+    text-color:     inherit;
+    vertical-align: 0.5;
+    cursor:         inherit;
+    highlight:      bold #cba6f7;   /* eşleşen harfler vurgulanır */
+}
+
+/* ── Mod sekmeleri (Tab ile geçiş) ─────────────────────────────────────── */
+mode-switcher {
+    spacing: 8px;
+}
+
+button {
+    padding:          8px;
+    border-radius:    9px;
+    background-color: @mantle;
+    text-color:       @overlay0;
+    cursor:           pointer;
+}
+
+button selected {
+    background-color: @surface0;
+    text-color:       @accent;
+}
+
+/* ── Mesaj alanı (hata / bilgi) ────────────────────────────────────────── */
+message {
+    background-color: @mantle;
+    border-radius:    10px;
+    padding:          10px 12px;
+}
+
+textbox {
+    text-color:     @subtext0;
+    vertical-align: 0.5;
+}

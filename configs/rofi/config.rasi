@@ -1,0 +1,75 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   rofi — davranış ayarları
+   Arch_Dotfile  ·  Görünüm için: theme.rasi
+
+   Paket notu: Arch'ta ayrı bir `rofi-wayland` paketi ARTIK YOK.
+   extra/rofi 2.0.0 Wayland desteğini içeriyor ve `rofi-wayland` paketini
+   provides/replaces ediyor. AUR'dan rofi-wayland kurmayın.
+
+   Kullanım (kısayollar hypr/lua/binds.lua içinde):
+     SUPER + R          uygulamalar   (drun)
+     SUPER + SHIFT + R  komut         (run)
+     SUPER + TAB        pencereler    (window)
+     SUPER + PERIOD     emoji         (rofi-emoji eklentisi gerekir)
+     SUPER + C          pano geçmişi  (cliphist | rofi -dmenu)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+configuration {
+    modes:                       "drun,run,window";
+    font:                        "JetBrainsMono Nerd Font 11";
+
+    /* Girdi listesinde simge göster. */
+    show-icons:                  true;
+    icon-theme:                  "dracula-icons-main";
+
+    /* Uygulama adının yanında genel açıklamayı da göster
+       ("Brave" yerine "Brave — Web Tarayıcı"). */
+    drun-display-format:         "{name} [<span weight='light' size='small'><i>({generic})</i></span>]";
+    drun-match-fields:           "name,generic,exec,categories,keywords";
+
+    /* Pencere listesinde workspace numarası + sınıf + başlık. */
+    window-format:               "{w} · {c} · {t}";
+    window-match-fields:         "title,class,name,desktop";
+
+    /* Yazdıkça sıralama: en iyi eşleşme üstte. */
+    sort:                        true;
+    sorting-method:              "fzf";
+    matching:                    "fuzzy";
+
+    /* Sık kullanılanlar üste çıksın. */
+    disable-history:             false;
+
+    /* Mod adlarını simgeyle göster (mod değiştirici sekmeler). */
+    display-drun:                "󰀻  Uygulamalar";
+    display-run:                 "󰅩  Çalıştır";
+    display-window:              "󰖯  Pencereler";
+    display-emoji:               "󰞅  Emoji";
+
+    /* Listede seçim tamamlanmadan Enter'a basınca komutu çalıştırma. */
+    run-command:                 "{cmd}";
+    run-shell-command:           "{terminal} -e {cmd}";
+    terminal:                    "alacritty";
+
+    /* ── Tuş atamaları ──────────────────────────────────────────────────
+       rofi bir tuş iki farklı işleve bağlıysa AÇILIŞTA HATA PENCERESİ
+       gösterir ("Binding `X` is already bound"). Bu yüzden burada yalnızca
+       gerçekten boş olan tuşlar kullanılıyor. Varsayılanları görmek için:
+
+           rofi -no-config -dump-config | grep kb-
+
+         · Control+k varsayılanda `kb-remove-to-eol`e bağlı; vim yönü için
+           kullanabilmek adına önce onu boşaltıyoruz.
+         · Control+j EKLENMİYOR: rofi 2.0'da varsayılan `kb-accept-entry`
+           listesinde ("Control+j,Control+m,Return,KP_Enter"). Aşağı yön
+           olarak da atanırsa rofi her açılışta hata penceresi açıyordu.
+           Aşağı yön için Control+n zaten var.
+         · Tab'a DOKUNULMUYOR: varsayılanda `kb-row-tab`'a bağlı ve
+           üzerine yazmak çakışma hatası verir.
+           Modlar arası geçiş varsayılan Control+Tab ile yapılır.        */
+    kb-remove-to-eol:            "";
+    kb-row-up:                   "Up,Control+p,Control+k";
+    kb-row-down:                 "Down,Control+n";
+    kb-cancel:                   "Escape,Control+bracketleft";
+}
+
+@theme "~/.config/rofi/theme.rasi"

@@ -1,36 +1,36 @@
 {
     "label" : "lock",
-    "action": "loginctl lock-session",
-    "text" : "Lock",
-    "keybind" : "l"
-}
-{
-    "label" : "reboot",
-    "action" : "systemctl reboot",
-    "text" : "Reboot",
-    "keybind" : "r"
-}
-{
-    "label" : "shutdown",
-    "action" : "systemctl poweroff",
-    "text" : "Shutdown",
-    "keybind" : "s"
+    "action": "hyprlock",
+    "text"  : "Kilitle",
+    "keybind": "k"
 }
 {
     "label" : "logout",
-    "action" : "loginctl kill-session $XDG_SESSION_ID",
-    "text" : "Logout",
-    "keybind" : "e"
+    "action": "hyprctl dispatch exit",
+    "text"  : "Oturumu Kapat",
+    "keybind": "o"
 }
 {
     "label" : "suspend",
-    "action" : "systemctl suspend",
-    "text" : "Suspend",
-    "keybind" : "u"
+    "action": "hyprlock & sleep 0.5; systemctl suspend",
+    "text"  : "Uyku",
+    "keybind": "u"
 }
 {
     "label" : "hibernate",
-    "action" : "systemctl hibernate",
-    "text" : "Hibernate",
-    "keybind" : "h"
+    "action": "hyprlock & sleep 0.5; systemctl hibernate",
+    "text"  : "Hazırda Beklet",
+    "keybind": "h"
+}
+{
+    "label" : "reboot",
+    "action": "systemctl reboot",
+    "text"  : "Yeniden Başlat",
+    "keybind": "y"
+}
+{
+    "label" : "shutdown",
+    "action": "systemctl poweroff",
+    "text"  : "Kapat",
+    "keybind": "p"
 }

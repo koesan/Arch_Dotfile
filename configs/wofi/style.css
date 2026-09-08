@@ -1,34 +1,74 @@
-*{
-	border-radius: 3px;
-	border: none;
+/* ═══════════════════════════════════════════════════════════════════════════
+   wofi — yedek uygulama başlatıcı
+   Palet: Catppuccin Mocha
+   Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
 
+   Ana başlatıcı rofi'dir (SUPER+R). wofi yalnızca yedek olarak kurulur:
+   rofi bir sorun çıkarırsa `wofi --show drun` ile aynı işi görür.
+
+   Eski sürümdeki iki sorun burada giderildi:
+   · Palet masaüstünün geri kalanıyla uyumsuzdu (düz gri + mavi/mor degrade).
+   · font-family "Robot Mono Medium" idi; böyle bir yazı tipi yok, dolayısıyla
+     her zaman rastgele bir yedek yazı tipiyle çiziliyordu.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
+    font-size: 14px;
+    border: none;
+    border-radius: 0;
 }
 
 window {
-	font-size: 20px;
-	font-family: "Robot Mono Medium";
-	background-color: rgba(50, 50, 50, 0.8);
-	color: #ffffff;
+    background-color: rgba(30, 30, 46, 0.95);   /* base */
+    color: #cdd6f4;                              /* text */
+    border: 1px solid #313244;                   /* surface0 */
+    border-radius: 14px;
 }
 
-#entry{
-	padding: .25em;
+#outer-box {
+    padding: 14px;
 }
+
+#input {
+    background-color: #181825;                   /* mantle */
+    color: #cdd6f4;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+}
+
+#input:focus {
+    border-color: #89b4fa;                       /* blue = accent */
+}
+
+#scroll {
+    margin: 0;
+}
+
+#inner-box {
+    background-color: transparent;
+}
+
+#entry {
+    padding: 9px 12px;
+    border-radius: 9px;
+}
+
 #entry:selected {
-	background-color: #bbccdd;
-	background: linear-gradient(90deg, #88ddbb, #cca5dd);
-	color: #333333;
-}
-#text:selected{
-	color: #333333;
-}
-#input{
-	background-color: rgba(50, 50, 50, 0.5);
-	color: #ffffff;
-	padding: .25em;
+    background-color: #313244;                   /* surface0 */
+    color: #89b4fa;
 }
 
-image{
-	margin-left: .25em;
-	margin-right: .25em;
+#text {
+    color: #a6adc8;                              /* subtext0 */
+}
+
+#text:selected {
+    color: #89b4fa;
+}
+
+#img {
+    margin-right: 12px;
 }

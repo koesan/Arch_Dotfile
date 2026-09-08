@@ -1,0 +1,113 @@
+--[[
+  ═══════════════════════════════════════════════════════════════════════════
+   MAKİNEYE ÖZEL AYARLAR  —  örnek dosya
+   Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+
+   Kullanmak için kopyalayın:
+
+       cp ~/.config/hypr/lua/local.lua.example ~/.config/hypr/lua/local.lua
+
+   Sonra düzenleyin ve `hyprctl reload` deyin.
+
+   Bu dosya git deposunda izlenmez ve kurulum betiği MEVCUT local.lua'nın
+   üzerine hiçbir zaman yazmaz. Depoyu güncellediğinizde ayarlarınız kalır.
+
+   Buraya yalnızca o bilgisayara özgü şeyler yazın: ekran düzeni, ölçek,
+   klavye düzeni, harici fare hassasiyeti gibi. Ortak ayarlar diğer
+   lua/*.lua dosyalarındadır.
+  ═══════════════════════════════════════════════════════════════════════════
+--]]
+
+-- ---------------------------------------------------------------------------
+-- 1) EKRAN DÜZENİ
+-- ---------------------------------------------------------------------------
+-- Ekran adlarını ve desteklenen modları görmek için:
+--     hyprctl monitors all
+--
+-- position, DÖNDÜRÜLMÜŞ ve ÖLÇEKLENMİŞ çözünürlüğe göre verilir. 1920x1080
+-- bir ekran transform=3 (270°) ile dikey durduğunda mantıksal genişliği
+-- 1080px olur; bu yüzden ana ekranın soluna yapıştırmak için x = -1080
+-- kullanılır, -1920 değil.
+
+-- Örnek: dizüstü paneli 120Hz, harici ekran solda dikey ve yukarı kaydırılmış
+-- (bu deponun geliştirildiği makinenin düzeni).
+--
+-- hl.monitor({
+--     output   = "eDP-1",
+--     mode     = "1920x1080@120",
+--     position = "0x0",
+--     scale    = 1,
+-- })
+--
+-- hl.monitor({
+--     output    = "HDMI-A-1",
+--     mode      = "1920x1080@60",
+--     position  = "-1080x-420",
+--     scale     = 1,
+--     transform = 3,          -- 0=normal 1=90° 2=180° 3=270°
+-- })
+
+--[[
+  Sık kullanılan yerleşimler — HDMI-A-1 için:
+
+  | Yerleşim              | position     | transform |
+  |-----------------------|--------------|-----------|
+  | Solda, yatay          | "-1920x0"    | 0         |
+  | Sağda, yatay          | "1920x0"     | 0         |
+  | Solda, dikey (270°)   | "-1080x0"    | 3         |
+  | Sağda, dikey (270°)   | "1920x0"     | 3         |
+  | Solda, dikey (90°)    | "-1080x0"    | 1         |
+
+  Y koordinatı dikey hizalamayı belirler:
+    Y = 0     üst kenarlar hizalı
+    Y = -420  harici ekran yukarı kaydırılmış
+    Y = +420  harici ekran aşağı kaydırılmış
+--]]
+
+-- ---------------------------------------------------------------------------
+-- 2) WORKSPACE → MONİTÖR BAĞLARI
+-- ---------------------------------------------------------------------------
+-- Varsayılanda workspace'ler odaklı ekranda açılır. Sabit dağılım isterseniz:
+--
+-- for _, ws in ipairs({ 1, 2, 3 }) do
+--     hl.workspace_rule({ workspace = tostring(ws), monitor = "eDP-1",    default = ws == 1 })
+-- end
+-- for _, ws in ipairs({ 4, 5, 6 }) do
+--     hl.workspace_rule({ workspace = tostring(ws), monitor = "HDMI-A-1", default = ws == 4 })
+-- end
+--
+-- Bunu yaparsanız waybar/config içindeki "persistent-workspaces" bloğunu da
+-- aynı dağılıma göre güncelleyin (orada açıklama satırı var).
+
+-- ---------------------------------------------------------------------------
+-- 3) KLAVYE DÜZENİ
+-- ---------------------------------------------------------------------------
+-- Varsayılan "tr". Başka bir düzen için:
+--
+-- hl.config({ input = { kb_layout = "us", kb_variant = "intl" } })
+--
+-- İki düzen arasında ALT+SHIFT ile geçmek için:
+-- hl.config({ input = { kb_layout = "tr,us", kb_options = "grp:alt_shift_toggle" } })
+
+-- ---------------------------------------------------------------------------
+-- 4) NVIDIA
+-- ---------------------------------------------------------------------------
+-- Ekranı NVIDIA sürüyorsa (masaüstü, ya da MUX'suz dizüstü) bunları açın.
+-- Hibrit dizüstülerde AÇMAYIN: tarayıcı video hızlandırması yanlış GPU'ya
+-- gider ve pil ömrü düşer. Tek bir uygulamayı ayrık GPU'da çalıştırmak için
+-- `prime-run <uygulama>` kullanın (nvidia-prime paketi).
+--
+-- hl.env("LIBVA_DRIVER_NAME", "nvidia")
+-- hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+-- hl.env("NVD_BACKEND", "direct")
+
+-- ---------------------------------------------------------------------------
+-- 5) CİHAZA ÖZEL AYARLAR
+-- ---------------------------------------------------------------------------
+-- Cihaz adlarını görmek için:  hyprctl devices
+--
+-- hl.device({
+--     name          = "logitech-usb-receiver",
+--     sensitivity   = -0.2,
+--     accel_profile = "flat",
+-- })

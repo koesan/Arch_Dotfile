@@ -12,101 +12,369 @@
 
 ## 🚀 Hızlı Kurulum
 
-### ✨ Özellikler
-
-- 🎯 **Tek Komut Kurulum**: Tüm sistem bir script ile kurulur
-- 🔧 **Çakışma Önleme**: Paket çakışmaları otomatik tespit edilir
-- 💡 **Akıllı Kurulum**: Mevcut paketler atlanır
-- 📊 **Test Modu**: Neyin kurulacağını önceden görebilirsiniz
-- 🎨 **Modern UI**: Hyprland + Waybar + Wofi ile şık masaüstü
-
-### 📋 Sistem Gereksinimleri
-
-- **Arch Linux** veya türevleri (EndeavourOS, Manjaro, ArcoLinux)
-
-### ⚡ Otomatik Kurulum
-
-#### 1️⃣ **Test Modu** (Önerilen - Risk Yok)
-
 ```bash
-# Önce nelerin kurulacağını görmek için test modunu çalıştırın
-chmod +x test_mode.sh
-./test_mode.sh
-```
-
-**Test modu sadece analiz yapar, hiçbir değişiklik yapmaz!**
-
-**Test modu içinde onay vererek tam kurulumu başlata bilirsiniz.**
-
-#### 2️⃣ **Ana Kurulum**
-
-```bash
-# Ana kurulum scriptini başlatın
+git clone https://github.com/koesan/Arch_Dotfile.git
+cd Arch_Dotfile
 chmod +x arch_dotfile_installer.sh
 ./arch_dotfile_installer.sh
 ```
 
-### 📖 **İsteğe Bağlı: Manuel Kurulum**
+Hepsi bu. Script paketleri kurar, servisleri açar, yapılandırmaları yerine
+taşır ve temayı ayarlar. Sonunda yeniden başlatıp giriş ekranında **Hyprland**
+oturumunu seçmeniz yeterli.
 
-Eğer adım adım manuel kurulum yapmak isterseniz, aşağıdaki **Manuel Kurulum Rehberi**'ni takip edebilirsiniz.
+### 🔎 Önce görmek isterseniz
 
----
+```bash
+./arch_dotfile_installer.sh --dry-run   # hiçbir şey yapmaz, ne olacağını yazar
+```
 
-## 📦 Kurulacak Bileşenler
+### ✅ Kurulumdan sonra doğrulama
 
-### 🖥️ **Masaüstü Ortamı**
+```bash
+./arch_dotfile_installer.sh --check     # eksik paket / dosya / servis var mı?
+```
 
-- **Hyprland** - Modern Wayland compositor
-- **Waybar** - Özelleştirilebilir durum çubuğu
-- **Wofi** - Şık uygulama başlatıcı
-- **Alacritty** - GPU hızlandırmalı terminal
-- **Nemo** - Kullanıcı dostu dosya yöneticisi
-- **wlogout** - Güzel çıkış menüsü
+### ⚙️ Diğer seçenekler
 
-### 🛠️ **Geliştirme Araçları**
-
-- **VS Code** - Microsoft'un resmi kod editörü
-- **Git + base-devel** - Temel geliştirme araçları
-- **Python** (pip + virtualenv) - Python geliştirme ortamı
-- **Docker** - Konteyner teknolojisi
-- **Zsh + Oh My Zsh** - Gelişmiş kabuk ve eklentiler
-
-### 🌐 **Uygulamalar**
-
-- **Brave Browser** - Gizlilik odaklı web tarayıcısı
-- **LibreOffice** - Ücretsiz ofis paketi (Türkçe destekli)
-- **Flatpak** - Evrensel uygulama yöneticisi
-
-### 🎨 **Görsel & Fontlar**
-
-- **Noto Fonts** - Google'ın evrensel font ailesi
-- **Font Awesome** - İkon fontları
-- **Arimo Nerd Font** - Geliştirici fontları
-- **Microsoft Fonts** - MS Office uyumluluğu
+| Seçenek | Ne yapar |
+| --- | --- |
+| `--dry-run` | Hiçbir değişiklik yapmadan tüm komutları listeler |
+| `--check` | Kurulum sonrası doğrulama raporu üretir |
+| `--minimal` | LibreOffice, Docker, VS Code, Brave, Flatpak, MS fontlarını atlar |
+| `--no-aur` | AUR paketlerini atlar (wlogout ve Catppuccin temaları kurulmaz) |
+| `-y`, `--yes` | Soru sormaz, tam otomatik kurar |
+| `--help` | Yardım |
 
 ---
 
-## 📁 Kurulum Sonrası Dosya Yapısı
+## ✨ Bu kurulumun özellikleri
+
+- **Tek komut.** Paketler, servisler, yapılandırmalar, tema — hepsi tek çalıştırmada.
+- **Taşınabilir.** Depoda hiçbir ekran adı, GPU modeli veya sensör yolu sabit
+  değildir. Ekran düzeni otomatik algılanır, CPU sıcaklık sensörü kurulum
+  sırasında bulunur. Aynı depo farklı bir Arch bilgisayarda düzenlenmeden çalışır.
+- **Yeniden çalıştırılabilir.** İkinci kez çalıştırmak zarar vermez; sadece
+  eksikleri tamamlar.
+- **Yıkıcı değil.** Üzerine yazılan her dosya önce
+  `~/.config/arch-dotfile-backup/<tarih>/` altına yedeklenir.
+- **Kısmi hataya dayanıklı.** Bir paket kurulamazsa kurulum durmaz; sonunda
+  neyin başarısız olduğu özetlenir.
+- **Makineye özel ayarlarınız korunur.** `~/.config/hypr/lua/local.lua` ve
+  kendi koyduğunuz duvar kağıdı güncellemelerde silinmez.
+
+---
+
+## 🎨 Tema
+
+Masaüstünün tamamı tek bir palet kullanır: **Catppuccin Mocha**.
+
+| Bileşen | Nereden gelir |
+| --- | --- |
+| Hyprland kenarlık/gölge | `configs/hypr/lua/theme.lua` (renklerin tek kaynağı) |
+| Waybar | `configs/waybar/style.css` |
+| Rofi | `configs/rofi/theme.rasi` |
+| Mako (bildirimler) | `configs/mako/config` |
+| wlogout | `configs/wlogout/style.css` |
+| Hyprlock (kilit ekranı) | `configs/hypr/hyprlock.conf` |
+| Alacritty | `configs/alacritty/themes/catppuccin_mocha.toml` |
+| GTK 3 / GTK 4 | Kurulum sırasında `catppuccin-gtk-theme-mocha` (AUR) |
+| Qt 5 / Qt 6 | Kurulum sırasında üretilen qt5ct/qt6ct renk şeması |
+| İmleç | Kurulum sırasında `catppuccin-cursors-mocha` (AUR) |
+| Simgeler | `dracula-icons-main` (depoda gömülü) |
+
+**Tema otomatik indirilir.** GTK teması ve imleçler AUR'dan kurulur. AUR'a
+erişilemezse veya `--no-aur` kullanılırsa kurulum durmaz: depoda gömülü olan
+`Andromeda-gtk` temasına ve `Adwaita` imleçlerine düşülür. Script her zaman
+**gerçekten kurulu olan** temanın adını yazar — var olmayan bir tema adı
+hiçbir ayar dosyasına yazılmaz.
+
+Paleti değiştirmek isterseniz başlangıç noktası `configs/hypr/lua/theme.lua`
+dosyasıdır; her stil dosyasının başında da kendi palet bloğu bulunur.
+
+---
+
+## 🖥️ Ekran düzeni ve makineye özel ayarlar
+
+Varsayılan olarak **hiçbir ekran adı varsayılmaz**: bağlı olan tüm ekranlar
+tercih edilen çözünürlükte, otomatik konumda ve **1:1 ölçekte** açılır;
+dizüstü paneli varsa en yüksek tazeleme hızı seçilir.
+
+> Ölçek neden `auto` değil? Hyprland'in otomatik ölçeği EDID'deki fiziksel
+> panel boyutundan DPI hesaplıyor ve 14–15" bir 1080p dizüstü panelinde 1.5
+> çıkarıyor: yazılar, panel ve pencereler %50 büyüyor, ekran 1280x720 gibi
+> davranıyor. Buradaki yazı boyutları 1080p'de doğru görünecek şekilde
+> seçildiği için varsayılan ölçek 1. 4K bir ekranda büyütmek isterseniz
+> `local.lua` içinde `scale = 1.5` (ya da 2) verin.
+
+Kendi düzeninizi (ikinci ekran, dikey monitör, özel ölçek, farklı klavye
+düzeni, NVIDIA seçenekleri) tanımlamak için:
+
+```bash
+cp ~/.config/hypr/lua/local.lua.example ~/.config/hypr/lua/local.lua
+$EDITOR ~/.config/hypr/lua/local.lua
+hyprctl reload
+```
+
+`local.lua` git'te izlenmez ve kurulum betiği **üzerine yazmaz** — depoyu
+güncellediğinizde ayarlarınız kalır.
+
+---
+
+## ⌨️ Kısayollar
+
+`SUPER` = Windows tuşu. Tam liste: `configs/hypr/lua/binds.lua`
+
+### Uygulamalar
+| Kısayol | İşlev |
+| --- | --- |
+| `SUPER + RETURN` | Terminal (Alacritty) |
+| `SUPER + E` | Dosya yöneticisi (Nemo) |
+| `SUPER + B` | Tarayıcı (Brave) |
+| `SUPER + SHIFT + C` | Kod editörü (VS Code) |
+| `SUPER + I` | Sistem izleyici (btop) |
+| `SUPER + R` | Uygulama başlatıcı (rofi) |
+| `SUPER + SHIFT + R` | Komut çalıştır |
+| `SUPER + TAB` | Açık pencereler |
+| `SUPER + PERIOD` | Emoji seçici |
+| `SUPER + C` | Pano geçmişi (cliphist) |
+| `SUPER + SHIFT + V` | Pano geçmişi (aynı komut, ikinci kısayol) |
+
+> **Pano geçmişi nasıl çalışır?**
+> Oturum açılışında `wl-paste --watch cliphist store` arka planda başlar
+> (bkz. `hypr/lua/autostart.lua`) ve kopyaladığınız her metni/görseli
+> `~/.cache/cliphist/db` içine yazar. `SUPER + C` bu geçmişi rofi'de
+> açar: yazarak arayın, Enter'a basın — seçtiğiniz kayıt panoya geri konur,
+> ardından normal `CTRL + V` ile yapıştırırsınız.
+> Terminalden de bakabilirsiniz: `cliphist list` (tümü),
+> `cliphist list | head -1` (en son kopyaladığınız),
+> `cliphist wipe` (geçmişi temizler).
+
+### Pencere
+| Kısayol | İşlev |
+| --- | --- |
+| `SUPER + Q` | Pencereyi kapat |
+| `SUPER + SHIFT + Q` | Zorla sonlandır |
+| `SUPER + V` | Yüzen / döşeli |
+| `SUPER + F` | Tam ekran |
+| `SUPER + SHIFT + F` | Ekranı kapla |
+| `SUPER + T` | Ortala |
+| `SUPER + SHIFT + P` | Tüm workspace'lerde sabitle |
+| `SUPER + G` | Grup (sekmeli pencere) |
+| `ALT + TAB` | Pencereler arasında geç |
+| `SUPER + ok tuşları` | Odağı taşı |
+| `SUPER + SHIFT + ok` | Pencereyi taşı |
+| `SUPER + CTRL + ok` | Yeniden boyutlandır |
+| `SUPER + ALT + ok` | Diğer monitöre taşı |
+
+### Oturum ve sistem
+| Kısayol | İşlev |
+| --- | --- |
+| `SUPER + L` | Ekranı kilitle (hyprlock) |
+| `SUPER + ESCAPE` | Oturum menüsü (wlogout) |
+| `SUPER + M` | Hyprland'den çık (`SUPER + SHIFT + M` de aynı işi yapar) |
+| `SUPER + N` | Bildirimleri temizle |
+| `SUPER + SHIFT + N` | Son bildirimi geri getir |
+| `SUPER + U` | Waybar'ı yeniden başlat |
+| `SUPER + 1..0` | Workspace değiştir |
+| `SUPER + SHIFT + 1..0` | Pencereyi workspace'e taşı |
+| `SUPER + S` | Scratchpad |
+
+### Ekran görüntüsü
+| Kısayol | İşlev |
+| --- | --- |
+| `PRINT` | Bölge seç → swappy ile düzenle |
+| `SHIFT + PRINT` | Tam ekran → panoya + `~/Resimler` |
+| `ALT + PRINT` | Aktif pencere → panoya + `~/Resimler` |
+
+---
+
+## 📦 Kurulan bileşenler
+
+### Masaüstü
+Hyprland · Waybar · Rofi · Mako · wlogout · Hyprlock · Hypridle · Hyprpaper ·
+Alacritty · Nemo
+
+### Sistem
+PipeWire (+ WirePlumber, pavucontrol) · NetworkManager · BlueZ + Blueman ·
+XDG portalları (hyprland + gtk) · hyprpolkitagent · brightnessctl · playerctl ·
+cliphist + wl-clipboard · grim/slurp/swappy
+
+### Geliştirme
+Git + base-devel · Python (pip, virtualenv) · Docker · VS Code ·
+Zsh + Oh My Zsh (autosuggestions, syntax-highlighting)
+
+### Uygulamalar
+Brave · LibreOffice (Türkçe) · Flatpak + MarkText
+
+### Yazı tipleri
+JetBrainsMono Nerd Font · Nerd Fonts Symbols · Font Awesome ·
+Noto Fonts (+ emoji) · MS Fonts
+
+> **Not:** `neofetch` Arch depolarından kaldırıldığı için yerine `fastfetch`
+> kuruluyor.
+
+---
+
+## 📊 Panel düzeni (waybar)
+
+```
+┌─────────────────────────────┬──────────────┬──────────────────────────────────┐
+│ açık uygulamalar + başlık   │ workspace'ler│ durum modülleri … pil, saat      │
+│ SOL                         │ ORTA         │ SAĞ                              │
+└─────────────────────────────┴──────────────┴──────────────────────────────────┘
+```
+
+| Bölge | İçerik |
+| --- | --- |
+| Sol | `wlr/taskbar` — açık her pencere bir simge (tıkla: geç, orta tık: kapat), yanında odaklı pencerenin başlığı |
+| Orta | Workspace numaraları. Sabit liste yok: yalnızca **dolu** olanlar çizilir, üç workspace kullanıyorsanız `1 2 3` görünür |
+| Sağ | gizlilik · **kahve (uyku engelle)** · ses · **mikrofon** · bluetooth · ağ · parlaklık · CPU · RAM · sıcaklık · tepsi · pil · **saat (en sağda)** |
+
+Mikrofon modülü yalnızca durum gösterir (yüzde yok): açıkken 󰍬, kapalıyken
+kırmızı 󰍭. Tıklayınca açılıp kapanır, sağ tık `pavucontrol`'ün giriş sekmesini
+açar.
+
+---
+
+## ☕ Kahve düğmesi ve boşta kalma davranışı
+
+Panelde 󰾪 simgesine tıklayınca kahve **açılır** (dolu sarı ada, 󰅶) ve makine
+boşta kalmayı tamamen bırakır. Tekrar tıklayınca kapanır (soluk gri).
+
+| Kahve | Ne olur |
+| --- | --- |
+| 󰅶 **açık** | Ekran kararmaz, kilitlenmez, kapanmaz, uykuya girmez. Süresiz. |
+| 󰾪 **kapalı** | 4.5 dk → ekran kararır (uyarı) · **5 dk → kilitlenir ve ekran kapanır** · 15 dk → uykuya girer (**yalnızca pilde**; prizde asla) |
+
+Tam ekran video oynatan pencereler sayacı zaten kendiliğinden durdurur
+(`hypr/lua/rules.lua` → `inhibit-idle-on-fullscreen`), kahveye dokunmanız
+gerekmez.
+
+**Kahve neden waybar'ın yerleşik modülü değil?** Waybar'ın `idle_inhibitor`
+modülü durumu yalnızca bellekte tutar: waybar her yeniden başladığında (config
+değişikliği, oturum açılışı, `killall waybar`) sessizce kapalıya döner —
+kullanıcı düğmeyi açık sanırken ekran 5 dakikada kararır. Bu depoda durumu
+`~/.local/bin/caffeine` betiği `$XDG_RUNTIME_DIR/caffeine` dosyasında tutar, bu
+yüzden waybar'dan bağımsız yaşar. İki bağımsız katman koruma sağlar:
+
+1. `hypridle.conf` içindeki her listener `condition_cmd` ile o dosyaya bakar;
+2. betik ayrıca bir systemd `idle:sleep` kilidi alır (`systemd-inhibit --list`
+   ile görebilirsiniz), bu da `systemctl suspend` çağrısını bloklar.
+
+Durum oturuma özeldir: `$XDG_RUNTIME_DIR` çıkışta temizlendiği için kahve her
+açılışta **kapalı** başlar. Terminalden de kullanılabilir:
+
+```bash
+caffeine on        # aç
+caffeine off       # kapat
+caffeine toggle    # aç/kapat
+caffeine active    # açıksa çıkış kodu 0
+```
+
+---
+
+## 📁 Kurulum sonrası dosya yapısı
 
 ```
 ~/.config/
-├── alacritty/      # Terminal ayarları
-├── waybar/         # Durum çubuğu yapılandırması  
-├── hypr/           # Hyprland masaüstü ayarları
-├── wofi/           # Uygulama başlatıcı temaları
-├── wlogout/        # Çıkış menüsü ayarları
-└── nemo/           # Dosya yöneticisi ayarları
+├── hypr/
+│   ├── hyprland.lua          # ana giriş — yalnızca modülleri yükler
+│   ├── lua/
+│   │   ├── theme.lua         # Catppuccin Mocha paleti (renklerin tek kaynağı)
+│   │   ├── env.lua           # ortam değişkenleri
+│   │   ├── monitors.lua      # ekran düzeni (otomatik algılama)
+│   │   ├── look.lua          # boşluk, kenarlık, animasyon
+│   │   ├── input.lua         # klavye, fare, touchpad
+│   │   ├── binds.lua         # kısayollar
+│   │   ├── rules.lua         # pencere ve katman kuralları
+│   │   ├── autostart.lua     # açılışta başlayan süreçler
+│   │   ├── cursor.lua        # kurulum betiği üretir (imleç teması)
+│   │   ├── local.lua         # SİZİN makineye özel ayarlarınız (git'te yok)
+│   │   └── local.lua.example # başlangıç şablonu
+│   ├── hyprlock.conf         # kilit ekranı
+│   ├── hypridle.conf         # boşta kalma → karart / kilitle / uyut (kahveye bakar)
+│   ├── hyprpaper.conf        # duvar kağıdı
+│   └── wallpaper/
+├── waybar/                   # panel
+├── rofi/                     # uygulama başlatıcı
+├── mako/                     # bildirimler
+├── wlogout/                  # oturum menüsü (+ icons-svg/)
+├── alacritty/                # terminal + tema koleksiyonu
+├── wofi/                     # yedek başlatıcı
+├── gtk-3.0/  gtk-4.0/        # kurulum betiği üretir
+├── qt5ct/    qt6ct/          # kurulum betiği üretir
+└── arch-dotfile-backup/      # üzerine yazılan dosyaların yedekleri
+
+# Nemo ayarları dosya değil dconf anahtarıdır; kurulum sırasında
+# `dconf load /org/nemo/ < configs/nemo/nemo-dconf.conf` ile uygulanır.
 
 ~/
-├── .icons/         # Özel simge temaları
-├── .themes/        # GTK temaları
-├── .zshrc          # Zsh yapılandırması
-└── .oh-my-zsh/     # Oh My Zsh ve eklentiler
+├── .local/bin/caffeine       # kahve (uyku engelleme) anahtarı — panel bunu çağırır
+├── .icons/     .themes/      # simge ve GTK temaları
+├── .zshrc      .oh-my-zsh/
+└── .cache/arch-dotfile-install-<tarih>.log
 ```
+
+---
+
+## ❓ Sorun giderme
+
+**Panelde simgeler kutu görünüyor**
+JetBrainsMono Nerd Font kurulu değil: `sudo pacman -S ttf-jetbrains-mono-nerd`
+
+**Bildirimler görünmüyor**
+`mako` çalışıyor mu: `pgrep mako`. Test: `notify-send "deneme" "merhaba"`
+
+**Ekran paylaşımı çalışmıyor**
+`systemctl --user restart xdg-desktop-portal xdg-desktop-portal-hyprland`
+
+**Ekran düzeni yanlış**
+`hyprctl monitors all` ile adları öğrenip `~/.config/hypr/lua/local.lua`
+içine yazın, sonra `hyprctl reload`.
+
+**Yapılandırma yüklenmiyor / eski ayarlar geçerli**
+Hyprland önce `hyprland.lua` arar, bulamazsa eski `hyprland.conf`'a düşer.
+Eski dosya duruyorsa silin:
+`rm ~/.config/hypr/hyprland.conf` — hangisinin kullanıldığını görmek için:
+`grep "\[cfg\]" /run/user/$UID/hypr/*/hyprland.log`
+
+**Kahve açık ama ekran yine de kararıyor**
+Önce durumu doğrulayın: `caffeine status` ve `systemd-inhibit --list | grep
+caffeine`. İkisi de açık görünüyorsa hypridle eski yapılandırmayla çalışıyor
+olabilir: `killall hypridle && hypridle &`. Panelde düğme hiç görünmüyorsa
+betik kurulmamıştır: `ls -l ~/.local/bin/caffeine`.
+
+**Panelde en soldaki kutunun arka planı kayboluyor**
+Düzeltildi. Sebebi `style.css` içinde `window#waybar.empty #taskbar` kuralıydı:
+`.empty` sınıfını `hyprland/window` modülü panelin tamamına ekler ve yalnızca
+"odaklı pencerenin BAŞLIĞI boş" demektir — "hiç pencere yok" demek değil.
+Başlıksız bir pencere odaklanınca görev çubuğu simgeleri yerinde kalıyor ama
+arka plan adası kayboluyordu. O kuralı geri eklemeyin.
+
+**Bir şeyi bozdum, geri almak istiyorum**
+Kurulum her dosyayı yedekliyor:
+`ls ~/.config/arch-dotfile-backup/`
+
+**Genel durum kontrolü**
+`./arch_dotfile_installer.sh --check`
 
 ---
 
 # 📖 Manuel Kurulum Rehberi
+
+> ⚠️ **Bu bölüm arşiv niteliğindedir ve kurulum betiğini YANSITMAZ.**
+>
+> Aşağıdaki notlar, bu masaüstünün nasıl elle kurulabileceğini anlatan eski
+> kişisel bir rehberdir. Sublime Text, Zen kernel, Timeshift, pywal gibi
+> burada geçen bazı adımların `arch_dotfile_installer.sh` içinde karşılığı
+> **yoktur**; bazıları da (ör. `wofi` yerine `rofi`, `hyprland.conf` yerine
+> `hyprland.lua`) artık güncel değildir.
+>
+> Kurulumda gerçekten ne yapıldığını görmek için tek doğru kaynak:
+> `./arch_dotfile_installer.sh --dry-run`
+
+
 
 > **Not**: Manuel kurulum yapmak zorunda değilsiniz! Yukarıdaki otomatik scriptler çoğu kullanıcı için yeterlidir.
 
@@ -435,13 +703,20 @@ cp -r configs/wofi "$HOME/.config/"
 # veya
 
 ```bash
-sudo pacman -S rofi
+sudo pacman -S rofi rofi-emoji
 ```
 
 Dosyaları aktarmak için:
 
 ```bash
-cp -r configs/waybar "$HOME/.config/"
+cp -r configs/rofi "$HOME/.config/"
+```
+
+Bildirimler için mako:
+
+```bash
+sudo pacman -S mako
+cp -r configs/mako "$HOME/.config/"
 ```
 
 ---
@@ -737,7 +1012,7 @@ Dosyaları aktarmak için:
 
 ```bash
 cp -r configs/.themes "$HOME/"
-cp -r configs/.icons  "$HOME/
+cp -r configs/.icons  "$HOME/"
 ```
 
 Ardından, ***nwg-look*** programını çalıştırarak tema ve ikonları değiştirebilirsiniz.

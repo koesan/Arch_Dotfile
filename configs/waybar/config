@@ -1,131 +1,329 @@
-//sudo pacman -S waybar
-//sudo pacman -S pulseaudio
-//sudo pacman -S blueman
-//sudo pacman -S networkmanager
-//sudo pacman -S alacritty
-//sudo pacman -S btop
-
+// ═══════════════════════════════════════════════════════════════════════════
+//  Waybar — Arch_Dotfile
+//  Palet: Catppuccin Mocha (renkler style.css içinde)
+//
+//  İkonlar Nerd Font "Material Design" aralığından (U+F0xxx) seçildi.
+//  Bu bilinçli bir tercih: Font Awesome'ın U+F0xx aralığı, sistemde
+//  ttf-ms-fonts kuruluysa Webdings ile çakışıyor ve yanlış simge çiziliyor.
+//  Material Design aralığında böyle bir çakışma yok.
+//
+//  Modül belgeleri:  man 5 waybar-<modül>   (ör. man 5 waybar-battery)
+// ═══════════════════════════════════════════════════════════════════════════
 {
-    // Üst paneldeki özellikler
-    "layer": "top",  // Panelin konumu (top, overlay)
-    "height": 30,  // Panelin yüksekliği
-    "spacing": 4,  // Modüller arasındaki boşluk
-    "modules-left": ["wlr/taskbar"],  // Sol modüller
-    "modules-center": ["hyprland/workspaces"],  // Ortada gösterilecek modüller
-    "modules-right": ["pulseaudio", "bluetooth", "network", "cpu", "memory", "temperature", "backlight", "battery", "clock"],  // Sağ modüller
+    "layer": "top",
+    "position": "top",
+    "height": 34,
+    // Modüller arası boşluk. style.css'teki `margin: 0 2px` ile toplanır;
+    // sağ tarafta çok modül olduğu için düşük tutuluyor, yoksa panel
+    // gereksiz yere geniş görünüyor.
+    "spacing": 2,
+    "margin-top": 4,
+    "margin-left": 8,
+    "margin-right": 8,
 
-    // Çalışan pencere modülü
+    // Yerleşim:
+    //   sol   → açık uygulamalar (görev çubuğu + odaklı pencerenin başlığı)
+    //   orta  → workspace ("sekme") göstergesi
+    //   sağ   → durum modülleri; saat EN SAĞDA, pilin sağında
+    "modules-left":   ["wlr/taskbar", "hyprland/submap", "hyprland/window"],
+    "modules-center": ["hyprland/workspaces"],
+    "modules-right":  [
+        "privacy",
+        "custom/caffeine",
+        "pulseaudio",
+        "pulseaudio#mic",
+        "bluetooth",
+        "network",
+        "backlight",
+        "cpu",
+        "memory",
+        "temperature",
+        "tray",
+        "battery",
+        "clock"
+    ],
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Sol
+    // ───────────────────────────────────────────────────────────────────────
+
     "hyprland/workspaces": {
-        "format": "{name}",  // Çalışan pencereyi adıyla göster
-        "format-icons": {
-            "active": "",  // Aktif pencere simgesi
-            "default": "",  // Varsayılan pencere simgesi
-            "persistent": ""  // Kalıcı pencere simgesi
+        // Numara göster. Durumlar (aktif / acil / boş) style.css'te renklendirilir;
+        // format-icons kullanılmıyor çünkü listede olmayan workspace'ler
+        // "default" simgesine düşer ve 7-10 numaraları kaybolurdu.
+        "format": "{name}",
+
+        // "persistent-workspaces" BİLEREK YOK.
+        // Eskiden { "*": [1,2,3,4,5] } yazıyordu: hiç pencere açılmamış olsa
+        // bile 1-5 arası beş kutu boşuna duruyordu. Anahtar olmadığında waybar
+        // yalnızca DOLU workspace'leri (artı o an odaklı olanı) çizer:
+        //   pencere yok            → 1
+        //   iki workspace dolu     → 1 2
+        //   üç workspace dolu      → 1 2 3
+        // Listeyi yeniden sabitlemek isterseniz anahtarı geri ekleyin; ekran
+        // adı yazmamak için "*" kullanın (bkz. hypr/lua/local.lua.example).
+
+        // Yalnızca o monitöre ait workspace'leri göster.
+        "all-outputs": false,
+        "on-click": "activate"
+    },
+
+    "hyprland/submap": {
+        "format": "󰌆 {}",
+        "tooltip": false
+    },
+
+    "hyprland/window": {
+        "format": "{title}",
+        "max-length": 45,
+        // Her monitör kendi odaklı penceresini göstersin.
+        "separate-outputs": true
+        // Pencere yokken boş kutu kalmasın diye style.css'te
+        // `#window:empty` kuralı var.
+    },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Orta
+    // ───────────────────────────────────────────────────────────────────────
+
+    "clock": {
+        "interval": 1,
+        "format": "󰥔 {:%H:%M}",
+        // Tıklayınca tarihe geçer, tekrar tıklayınca saniyeli saate.
+        "format-alt": "󰃭 {:%d.%m.%Y %A}",
+        "tooltip-format": "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "month",
+            "weeks-pos": "right",
+            "on-scroll": 1,
+            "format": {
+                "months":   "<span color='#cdd6f4'><b>{}</b></span>",
+                "days":     "<span color='#bac2de'>{}</span>",
+                "weeks":    "<span color='#94e2d5'><b>H{}</b></span>",
+                "weekdays": "<span color='#f9e2af'><b>{}</b></span>",
+                "today":    "<span color='#89b4fa'><b><u>{}</u></b></span>"
+            }
+        },
+        "actions": {
+            "on-click-right": "mode",
+            "on-scroll-up":   "shift_up",
+            "on-scroll-down": "shift_down"
         }
     },
 
-    // Görev çubuğu modülü (window taskbar)
-    "wlr/taskbar": {
-        "format": "{icon}",  // Görev çubuğunda simgeyi göster
-        "icon-size": 20,  // Simge boyutu
-        "icon-theme": "Star",  // Simge teması
-        "tooltip-format": "{title}",  // Tooltip formatı
-        "on-click": "activate",  // Sağ tıklama ile pencereyi aktive et
-        "on-click-right": "close",  // Sağtık tıklama ile pencereyi kapat
-        "class": "taskbar",  // Bu pencere sınıfı
-        "empty-class": "empty"  // Boş pencere sınıfı
+    // ───────────────────────────────────────────────────────────────────────
+    // Sağ
+    // ───────────────────────────────────────────────────────────────────────
+
+    // Ekran/mikrofon/kamera kullanımda olduğunda uyarır.
+    // Toplantı veya kayıt sırasında neyin paylaşıldığını görmek için.
+    "privacy": {
+        "icon-spacing": 6,
+        "icon-size": 13,
+        "transition-duration": 200,
+        "modules": [
+            { "type": "screenshare", "tooltip": true, "tooltip-icon-size": 20 },
+            { "type": "audio-in",    "tooltip": true, "tooltip-icon-size": 20 }
+        ]
     },
 
-    // Sistem tepsisi (tray) özellikleri
-    "tray": {
-        "icon-size": 20,  // Tray simgesi boyutu
-        "spacing": 10  // Tray simgeleri arasındaki boşluk
+    // Kahve düğmesi — açıkken ekran kararmaz, kilitlenmez, uyumaz.
+    //
+    // Waybar'ın YERLEŞİK "idle_inhibitor" modülü burada BİLEREK kullanılmıyor.
+    // O modül durumu yalnızca bellekte tutar: waybar her yeniden başladığında
+    // (config değişikliği, oturum açılışı, `killall waybar`) sessizce kapalıya
+    // döner. Kullanıcı düğmeyi açık sanırken ekran 5 dakikada kararıyordu.
+    //
+    // ~/.local/bin/caffeine durumu $XDG_RUNTIME_DIR/caffeine dosyasında tutar;
+    // hypridle'daki her listener `condition_cmd` ile o dosyaya bakar. Betik
+    // ayrıca bir systemd idle:sleep kilidi alır — iki bağımsız katman.
+    //
+    // "interval": "once" + "signal": 8 → modül yalnızca açılışta ve betik
+    // SIGRTMIN+8 gönderdiğinde çalışır; saniyede bir süreç başlatmaz.
+    // Sinyal numarası betikteki SIGNAL değişkeniyle aynı olmalıdır.
+    //
+    // Betik kurulu değilse komut başarısız olur, modül boş metin döndürür ve
+    // waybar onu hiç çizmez — panel yine açılır.
+    "custom/caffeine": {
+        "exec":        "$HOME/.local/bin/caffeine status",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      8,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/caffeine toggle"
     },
 
-    // Saat modülü
-    "clock": {
-        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",  // Tooltip formatı
-        "format-alt": "{:%d/%m/%Y}"  // Alternatif format
-    },
-
-    // CPU modülü
-    "cpu": {
-        "format": "{usage}% ",  // CPU kullanım yüzdesi ve simge
-        "tooltip": true  // Tooltip kullanımı
-    },
-
-    // Bellek (RAM) modülü
-    "memory": {
-        "format": "{}% ",  // Bellek kullanım yüzdesi ve simge
-        "interval": 5,  // Güncelleme aralığı
-        "exec": "free | awk '/Mem:/ {printf(\"%d\", $3*100/$2)}'",  // RAM kullanım yüzdesini hesaplayan komut
-        "tooltip": true,  // Tooltip gösterimi
-        "exec-tooltip": "free | awk '/Mem:/ {used=$2-$7; printf(\"%.1fG / %.1fG\\n\", used/1024/1024, $2/1024/1024)}'",  // RAM kullanılan ve toplam miktarı gösteren komut
-        "on-click": "alacritty -e btop",  // Tıklandığında btop'u başlat
-        "max-length": 8,  // Max uzunluk
-        "min-length": 8  // Min uzunluk
-    },
-
-    // Sıcaklık (CPU, GPU) modülü
-    "temperature": {
-        "hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",  // Sıcaklık sensör yolu
-        "critical-threshold": 80,  // Kritik sıcaklık eşiği
-        "format": "{temperatureC}°C {icon}",  // Sıcaklık formatı
-        "format-icons": ["", "", ""]  // Sıcaklık ikonları
-    },
-
-    // Ekran parlaklığı modülü
-    "backlight": {
-        "format": "{percent}% {icon}",  // Parlaklık yüzdesi ve simge
-        "format-icons": ["", ""]  // İkonlar (düşük ve yüksek parlaklık)
-    },
-
-    // Pil durumu modülü
-    "battery": {
-        "states": {
-            "warning": 30,  // Uyarı eşiği
-            "critical": 15  // Kritik eşiği
-        },
-        "format": "{capacity}% {icon}",  // Pil kapasitesini göster
-        "format-charging": "{capacity}% ",  // Şarj olurken format
-        "format-plugged": "{capacity}% ",  // Takılı olduğunda format
-        "format-alt": "{time} {icon}",  // Alternatif format
-        "format-icons": ["", "", "", "", ""]  // Pil simgeleri
-    },
-
-    // Bluetooth modülü
-    "bluetooth": {
-        "format-on": "",  // Bluetooth açık olduğunda simge
-        "format-off": "!",  // Bluetooth kapalı olduğunda simge
-        "format-disabled": "!",  // Bluetooth devre dışı olduğunda simge
-        "on-click": "blueman-manager",  // Blueman uygulamasını aç
-        "tooltip": false  // Tooltip devre dışı
-    },
-
-    // Ağ durumu modülü
-    "network": {
-        "format-wifi": " {essid} ({signalStrength}%)",  // Wifi formatı
-        "format-ethernet": "⬇{bandwidthDownBytes} ⬆{bandwidthUpBytes}",  // Ethernet formatı
-        "interval": 1,  // Güncelleme aralığı
-        "format": "",  // Genel ağ formatı
-        "format-disconnected": "⚠",  // Bağlantı yoksa uyarı simgesi
-        "on-click": "alacritty -e 'nmtui'",  // Ağ ayarlarını aç
-        "min-length": 17,  // Min uzunluk
-        "max-length": 17  // Max uzunluk
-    },
-
-    // Pulseaudio modülü (Ses kontrolü)
     "pulseaudio": {
-        "format": "<span font_desc='Font Awesome 6 Free Solid'>{icon}</span> / {format_source}",  // Ses formatı
-        "format-bluetooth": "<span font_desc='Font Awesome 6 Free Solid'></span> / {format_source}",  // Bluetooth ses formatı
-        "format-bluetooth-muted": "<span font_desc='Font Awesome 6 Free Solid'></span> / {format_source}",  // Bluetooth sessiz
-        "format-muted": "<span font_desc='Font Awesome 6 Free Solid'></span> / {format_source}",  // Ses kapalı
-        "format-source": "<span font_desc='Font Awesome 6 Free Solid'></span>",  // Ses kaynağı formatı
-        "format-source-muted": "<span font_desc='Font Awesome 6 Free Solid'></span>",  // Kaynak sessiz
+        // Eski config burada <span font_desc='Font Awesome 6 ...'> kullanıyordu.
+        // Sistemde Font Awesome 7 kurulu olduğu için o span'lar eşleşmiyor ve
+        // simgeler bozuk çiziliyordu. Artık font yalnızca style.css'te tanımlı.
+        "format":              "{icon} {volume}%",
+        "format-bluetooth":    "󰂰 {volume}%",
+        "format-bluetooth-muted": "󰝟 {volume}%",
+        "format-muted":        "󰝟 Sessiz",
         "format-icons": {
-            "headphone": "",  // Kulaklık takılıysa
-            "default": ["", "", ""]  // Diğer durumlar
+            "headphone":  "󰋋",
+            "headset":    "󰋎",
+            "hands-free": "󰋎",
+            "phone":      "󰏲",
+            "portable":   "󰄝",
+            "car":        "󰄋",
+            "hdmi":       "󰡁",
+            "default":    ["󰕿", "󰖀", "󰕾"]
         },
-        "on-click": "pavucontrol"  // Pulseaudio ayarlarını aç
+        "scroll-step": 5,
+        "on-click":        "pavucontrol",
+        "on-click-right":  "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "tooltip-format":  "{desc}\n{volume}%"
+    },
+
+    // Mikrofon. Aynı pulseaudio modülünün ikinci bir örneği ("#mic" son eki);
+    // waybar bunu ayrı bir modül gibi çizer ve style.css'te
+    // `#pulseaudio.mic` seçicisiyle ayrı renklendirilebilir.
+    //
+    // Yalnızca AÇIK/KAPALI durumu gösterilir, yüzde YOK: "{format_source}"
+    // modülün tamamının çıktısını kaynağın (mikrofonun) durumuna indirger.
+    //   açık   → 󰍬
+    //   kapalı → 󰍭   (üstü çizili mikrofon, style.css'te soluk renkte)
+    // Yüzde de isterseniz format-source'u "󰍬  {volume}%" yapın.
+    "pulseaudio#mic": {
+        "format":               "{format_source}",
+        // Kapalıyken renk CSS ile verilemiyor: waybar mikrofon için ayrı bir
+        // stil sınıfı üretmiyor (#pulseaudio.muted yalnızca HOPARLÖR susunca
+        // ekleniyor). Bu yüzden renk doğrudan Pango işaretlemesiyle veriliyor.
+        // #f38ba8 = Catppuccin Mocha "red" (style.css'teki @red ile aynı).
+        "format-source":        "󰍬",
+        "format-source-muted":  "<span color='#f38ba8'>󰍭</span>",
+        "on-click":             "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+        "on-click-right":       "pavucontrol -t 4",
+        "tooltip-format":       "Mikrofon: {source_desc}  ·  {source_volume}%\nTıkla: aç/kapat"
+    },
+
+    "bluetooth": {
+        "format":              "󰂯",
+        "format-disabled":     "󰂲",
+        "format-off":          "󰂲",
+        "format-connected":    "󰂱 {num_connections}",
+        "tooltip-format":              "{controller_alias}",
+        "tooltip-format-connected":    "{controller_alias}\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}",
+        "on-click":       "blueman-manager",
+        "on-click-right": "bluetoothctl power off"
+    },
+
+    "network": {
+        // Eski config'te "format": "" tanımlıydı ve min/max-length 17'ye
+        // sabitlenmişti; uzun SSID'ler ortadan kesiliyordu. Artık her durum
+        // için ayrı format var ve genişlik içeriğe göre ayarlanıyor.
+        "interval": 5,
+        "format-wifi":         "{icon} {essid}",
+        "format-ethernet":     "󰈀 {ifname}",
+        "format-linked":       "󰈀 {ifname} (IP yok)",
+        "format-disconnected": "󰤭 Bağlı değil",
+        "format-icons":        ["󰤟", "󰤢", "󰤥", "󰤨"],
+        "max-length": 22,
+        "tooltip-format-wifi":     "{essid} ({signalStrength}%)\n{ipaddr}/{cidr}\n↓ {bandwidthDownBytes}  ↑ {bandwidthUpBytes}",
+        "tooltip-format-ethernet": "{ifname}\n{ipaddr}/{cidr}\n↓ {bandwidthDownBytes}  ↑ {bandwidthUpBytes}",
+        "tooltip-format-disconnected": "Ağ bağlantısı yok",
+        "on-click": "alacritty --class nmtui -e nmtui"
+    },
+
+    "backlight": {
+        // Cihaz adı verilmezse waybar otomatik seçer; bu makinede amdgpu_bl2.
+        // Farklı bir makinede çalışması için sabitlenmedi.
+        "format": "{icon} {percent}%",
+        "format-icons": ["󰃞", "󰃟", "󰃠"],
+        "scroll-step": 5,
+        "tooltip-format": "Parlaklık {percent}%"
+    },
+
+    "cpu": {
+        "interval": 3,
+        "format": "󰻠 {usage}%",
+        "states": { "warning": 70, "critical": 90 },
+        "on-click": "alacritty -e btop",
+        "tooltip-format": "CPU {usage}%  ·  {avg_frequency} GHz  ·  yük {load}"
+    },
+
+    "memory": {
+        // Eski config'te "exec" ve "exec-tooltip" anahtarları vardı; memory
+        // modülünde böyle bir seçenek yok, sessizce yok sayılıyorlardı.
+        // Aynı bilgi modülün kendi değişkenleriyle veriliyor.
+        "interval": 5,
+        "format": "󰍛 {percentage}%",
+        "states": { "warning": 75, "critical": 90 },
+        "on-click": "alacritty -e btop",
+        "tooltip-format": "RAM  {used:0.1f} / {total:0.1f} GiB\nSwap {swapUsed:0.1f} / {swapTotal:0.1f} GiB"
+    },
+
+    "temperature": {
+        // ÖNEMLİ — bu blok makineye özeldir ve kurulum betiği tarafından
+        // otomatik doldurulur (setup_waybar_sensor).
+        //
+        // Eski config "/sys/class/hwmon/hwmon2/temp1_input" kullanıyordu:
+        // hwmonN numaraları her açılışta değişebildiği için bazen NVMe SSD'nin
+        // sıcaklığı CPU diye gösteriliyordu. Sonraki denemede sabit bir PCI
+        // yolu yazılmıştı; o da yalnızca tek bir makinede doğruydu.
+        //
+        // Doğru çözüm: yol vermemek. Waybar hiçbir hwmon anahtarı yoksa
+        // /sys/class/thermal/thermal_zone0 üzerinden okur — bu her makinede
+        // vardır. Kurulum betiği k10temp / coretemp / zenpower sensörünü
+        // bulabilirse aşağıya "hwmon-path" satırını ekleyerek daha doğru
+        // bir okuma sağlar; bulamazsa bu blok olduğu gibi kalır ve modül
+        // yine çalışır.
+        //
+        // Kendi yolunuzu görmek için:
+        //   for i in /sys/class/hwmon/hwmon*/temp*_input; do \
+        //     echo "$(cat "$(dirname "$i")"/name) -> $i"; done
+        "interval": 5,
+        "critical-threshold": 85,
+        "warning-threshold": 70,
+        "format": "{icon} {temperatureC}°C",
+        "format-icons": ["󰔏", "󰔐", "󰸁"],
+        "tooltip-format": "CPU sıcaklığı {temperatureC}°C",
+        "on-click": "alacritty -e btop"
+    },
+
+    "battery": {
+        "interval": 10,
+        "states": { "warning": 25, "critical": 10 },
+        "format":          "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged":  "󰚥 {capacity}%",
+        "format-full":     "󰁹 Dolu",
+        "format-icons":    ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "format-time":     "{H}s {M}dk",
+        "tooltip-format":  "{capacity}%  ·  {power:0.1f} W\nKalan: {time}\nSağlık: {health}%  ·  {cycles} döngü"
+    },
+
+    "tray": {
+        "icon-size": 16,
+        // Simgeler arası boşluk. 10 px'te tepside iki-üç simge varken kutu
+        // gereksiz genişliyordu.
+        "spacing": 6,
+        "show-passive-items": true
+    },
+
+    // ───────────────────────────────────────────────────────────────────────
+    // Görev çubuğu — panelin SOL ucu
+    // ───────────────────────────────────────────────────────────────────────
+    // Açık olan her pencere burada bir simge olarak durur. Yalnızca simge
+    // gösteriliyor ("{icon}"): başlıklar da yazılsaydı birkaç pencerede panel
+    // dolup workspace göstergesini ortadan kaydırırdı. Başlığı fareyle üzerine
+    // gelince ipucu olarak görürsünüz.
+    //
+    // "icon-theme" satırını kurulum betiği gerçekten kurulu simge temasına
+    // göre güncellemez; tema bulunamazsa waybar sistem varsayılanına düşer ve
+    // simgeler yine çizilir.
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "icon-size": 18,
+        "icon-theme": "dracula-icons-main",
+        "tooltip-format": "{title}",
+        "on-click": "activate",
+        "on-click-middle": "close",
+        "on-click-right": "fullscreen",
+        // Boş bir pencere listesi olduğunda kutu hiç çizilmesin.
+        "ignore-list": []
     }
 }

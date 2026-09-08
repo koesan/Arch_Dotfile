@@ -1,191 +1,331 @@
-/* Genel stil */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Waybar — Catppuccin Mocha
+   Arch_Dotfile  ·  https://github.com/koesan/Arch_Dotfile
+
+   Waybar GTK3 CSS kullanır. GTK3'te CSS değişkeni (var()) YOKTUR; renkler
+   @define-color ile tanımlanıp @isim şeklinde kullanılır. Paleti değiştirmek
+   için yalnızca aşağıdaki bloğu düzenlemeniz yeterli.
+
+   Not: GTK3 `box-shadow`, `transform` ve `gap` desteklemez. Yükseklik/aralık
+   margin ve padding ile kurgulanmıştır.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Palet ───────────────────────────────────────────────────────────────── */
+@define-color base     #1e1e2e;
+@define-color mantle   #181825;
+@define-color crust    #11111b;
+@define-color surface0 #313244;
+@define-color surface1 #45475a;
+@define-color surface2 #585b70;
+@define-color overlay0 #6c7086;
+@define-color overlay1 #7f849c;
+@define-color subtext0 #a6adc8;
+@define-color subtext1 #bac2de;
+@define-color text     #cdd6f4;
+
+@define-color blue     #89b4fa;
+@define-color lavender #b4befe;
+@define-color mauve    #cba6f7;
+@define-color sapphire #74c7ec;
+@define-color teal     #94e2d5;
+@define-color green    #a6e3a1;
+@define-color yellow   #f9e2af;
+@define-color peach    #fab387;
+@define-color red      #f38ba8;
+
+/* Semantik roller — modüller doğrudan bunları kullanır. */
+@define-color accent   @blue;
+@define-color warning  @yellow;
+@define-color critical @red;
+@define-color ok       @green;
+
+/* ── Temel ───────────────────────────────────────────────────────────────── */
 * {
-    border-radius: 10px;
-    font-family: FontAwesome, Roboto, Helvetica, Arial, sans-serif;
+    /* JetBrainsMono Nerd Font simgeleri de içerir. Kurulu değilse Arimo Nerd
+       Font, o da yoksa Symbols Nerd Font devreye girer — böylece simgeler
+       hiçbir durumda kutu (tofu) olarak çizilmez. */
+    font-family: "JetBrainsMono Nerd Font", "Arimo Nerd Font", "Symbols Nerd Font", "Noto Sans", sans-serif;
     font-size: 13px;
+    font-weight: 500;
+    /* GTK3'te min-height olmadan modüller farklı yüksekliklerde çizilebiliyor. */
+    min-height: 0;
+    border: none;
+    border-radius: 0;
+    /* Varsayılan GTK odak halkasını kaldır; panelde gereksiz çerçeve yapıyor. */
+    box-shadow: none;
+    text-shadow: none;
 }
 
-/* Waybar panel */
+/* Panelin kendisi saydam; görünen kutular modüllerin arka planıdır.
+   Bu "adacık" (island) düzeni panelin ekranın üstüne yapışmasını önler. */
 window#waybar {
-    background-color: rgba(43, 48, 59, 0.0);
-    border-bottom: 3px solid rgba(100, 114, 125, 0.0);
-    color: #ffffff;
-    transition: background-color 0.5s;
+    background: transparent;
+    color: @text;
 }
 
 window#waybar.hidden {
-    opacity: 0.2;
+    opacity: 0.0;
 }
 
-window#waybar.termite {
-    background-color: #3F3F3F;
-}
-
-window#waybar.chromium {
-    background-color: #000000;
-    border: none;
-}
-
-/* Button stili */
-button {
-    box-shadow: inset 0 -3px transparent;
-    border: none;
-    border-radius: 0;
-}
-
-/* Panel elemanları */
+/* Ortak modül kutusu. Her modül kendi yuvarlatılmış adasında durur. */
+#workspaces,
+#taskbar,
+#submap,
+#window,
 #clock,
-#battery,
+#privacy,
+#custom-caffeine,
+#pulseaudio,
+#bluetooth,
+#network,
+#backlight,
 #cpu,
 #memory,
 #temperature,
-#backlight,
-#bluetooth,
-#network,
-#pulseaudio,
-#tray,
-#mode,
-#mpd {
-    padding: 0 10px;
-    color: #ffffff;
-}
-
-/* Görev çubuğu */
-#taskbar {
-    background: #000000;
-    margin: 0 4px;
-    padding: 0 10px;
+#battery,
+#tray {
+    background-color: @mantle;
+    color: @text;
+    /* Dar tutuluyor: sağ tarafta on kadar modül var, her birine geniş bir
+       iç boşluk verilirse panelin yarısı boşluk oluyor. Kutular arasındaki
+       ayrımı `margin` + arka plan rengi zaten sağlıyor. */
+    padding: 0 8px;
+    margin: 0 2px;
     border-radius: 10px;
-    transition: all 0.3s ease-in-out;
+    /* İnce üst çizgi kutulara hafif bir yükseklik hissi verir. */
+    border-top: 1px solid alpha(@surface0, 0.6);
 }
 
-#taskbar.empty {
-    margin: 0;
-    padding: 0;
-    opacity: 0;
-    background: transparent;
-    border: none;
-}
-
-/* Görev çubuğundaki butonlar */
-#taskbar button {
-    padding: 5px;  /* Buton içindeki boşluk */
-    background-color: transparent;
-    border: none;
-    border-radius: 50%;  /* Dairesel şekil */
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-#taskbar button:hover {
-    background-color: white;
-    color: black;
-}
-
-
-/* Pencere ve çalışma alanı */
-#window,
+/* ── Workspace'ler ───────────────────────────────────────────────────────── */
 #workspaces {
-    background: #000000;
-    margin: 0 4px;
-    padding: 0 10px;
-    border-radius: 10px;
+    padding: 0 3px;
 }
 
 #workspaces button {
-    padding: 0 5px;
-    color: #7984a4;
-    background-color: transparent;
-    box-shadow: inset 0 -3px transparent;
-    border: none;
-    border-radius: 5px;
+    color: @overlay0;
+    background: transparent;
+    padding: 0 9px;
+    margin: 4px 2px;
+    border-radius: 7px;
+    /* Renk geçişi yumuşak olsun; GTK3 transition'ı destekler. */
+    transition: background-color 150ms ease, color 150ms ease;
 }
 
-#workspaces button.focused {
-    background-color: transparent;
+#workspaces button:hover {
+    background-color: @surface0;
+    color: @text;
 }
 
-#workspaces button.hover {
-    background-color: white;
-    color: black;
+/* Üzerinde pencere olan ama odaklı olmayan workspace. */
+#workspaces button.visible,
+#workspaces button.occupied {
+    color: @subtext0;
 }
 
+/* Odaklı workspace — tek vurgu rengi, dolgu yerine belirgin metin. */
 #workspaces button.active {
-    color: #fff;
+    background-color: @surface0;
+    color: @accent;
+    font-weight: 700;
 }
 
+/* Dikkat isteyen workspace (ör. arka planda açılan bir diyalog). */
 #workspaces button.urgent {
-    background-color: #eb4d4b;
+    background-color: @critical;
+    color: @crust;
+    font-weight: 700;
 }
 
-/* Saat, pil, CPU, bellek ve diğer modüller */
-#clock,
-#battery,
-#cpu,
-#memory,
-#backlight,
-#bluetooth,
-#network,
-#pulseaudio,
-#temperature {
-    background-color: #000000;
-    color: #ffffff;
+/* ── Görev çubuğu (sol uç) ───────────────────────────────────────────────── */
+/* Kutunun KENDİ iç boşluğu yok. Sebebi: hiç pencere açık değilken görev
+   çubuğunda tek bir düğme bile olmaz; `padding` verilseydi geriye boş ama
+   görünür bir ada kalırdı. Sıfır iç boşlukla kutu o durumda sıfır genişliğe
+   iner ve hiç çizilmez. Düğmeler arasındaki ve kenarlardaki boşluğu
+   aşağıdaki `margin` sağlar. */
+#taskbar {
+    padding: 0;
 }
 
-/* Kritik pil durumu */
-#battery.critical:not(.charging) {
-    color: #ffffff;
-    background-color: #f53c3c;
-    animation: blink 0.5s linear infinite alternate;
+#taskbar button {
+    padding: 0 6px;
+    margin: 3px;
+    border-radius: 8px;
+    background: transparent;
+    /* Simgenin altında ince bir çizgi; hangi pencerenin odaklı olduğu
+       aşağıdaki .active kuralıyla belli olur. */
+    border-bottom: 2px solid transparent;
 }
 
-/* CPU, bellek, ağ, ses, sıcaklık gibi modüller */
-#cpu,
-#memory,
-#backlight,
-#bluetooth,
-#network,
-#pulseaudio,
-#temperature {
-    background-color: #000000;
-    color: #ffffff;
+#taskbar button:hover {
+    background-color: @surface0;
 }
 
-/* Ağ kesildiğinde uyarı */
-#network.disconnected {
-    background-color: #f53c3c;
+#taskbar button.active {
+    background-color: @surface0;
+    border-bottom-color: @blue;
 }
 
-/* Ses modülü (pulseaudio) */
-#pulseaudio.muted {
-    background-color: #000000;
+/* Dikkat isteyen pencere (ör. indirme bitti) */
+#taskbar button.urgent {
+    background-color: @critical;
+    border-bottom-color: @critical;
 }
 
-/* Sıcaklık kritik olduğunda */
+/* DİKKAT — buraya `window#waybar.empty #taskbar` kuralı EKLEMEYİN.
+   `.empty` sınıfını `hyprland/window` modülü panelin TAMAMINA ekler ve
+   yalnızca "odaklı pencerenin BAŞLIĞI boş" demektir; "hiç pencere yok"
+   demek değildir. Eskiden burada öyle bir kural vardı: başlıksız bir
+   pencere odaklanınca (ör. yeni açılan boş bir pencere) görev çubuğundaki
+   simgeler yerinde dururken arka plan adası kayboluyor, panelin yalnızca
+   en solundaki kutu görünmez oluyordu. Boş görev çubuğu zaten yukarıdaki
+   sıfır `padding` sayesinde kendiliğinden gizleniyor. */
+
+/* ── Pencere başlığı ─────────────────────────────────────────────────────── */
+#window {
+    color: @subtext0;
+    font-weight: 400;
+}
+
+/* Odaklı pencere yokken boş bir kutu kalmasın.
+   Waybar bu durumda panele `.empty` sınıfını ekler.
+   (GTK3 `:empty` sözde-sınıfını desteklemez, o yüzden sınıfla eşleşiyoruz.) */
+window#waybar.empty #window {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+#submap {
+    background-color: @mauve;
+    color: @crust;
+    font-weight: 700;
+}
+
+/* ── Saat ────────────────────────────────────────────────────────────────── */
+/* Panelin EN SAĞ ucundaki modül: pilin sağında durur. */
+#clock {
+    color: @text;
+    font-weight: 600;
+    padding: 0 10px;
+}
+
+/* ── Sağ taraf durum modülleri ───────────────────────────────────────────── */
+/* Her modüle kendi simge rengi verilir: bilgi taramada renk, metinden hızlı
+   ayırt edilir. Metin @text olarak kalır, yalnızca vurgu rengi değişir. */
+
+#pulseaudio    { color: @sapphire; }
+/* Mikrofon (pulseaudio#mic). Hoparlörden ayrı bir renk: panele bakarken
+   "ses" ile "mikrofon" karışmasın. Kapalıyken kırmızıya dönmesi buradan
+   DEĞİL, config'teki format-source-muted içindeki Pango span'ından gelir —
+   waybar mikrofon için ayrı bir CSS sınıfı üretmiyor. */
+#pulseaudio.mic { color: @teal; padding: 0 8px; }
+#bluetooth     { color: @blue; }
+#network       { color: @teal; }
+#backlight     { color: @yellow; }
+#cpu           { color: @lavender; }
+#memory        { color: @mauve; }
+#temperature   { color: @peach; }
+#battery       { color: @green; }
+/* Kahve düğmesi. Kapalıyken soluk gri, açıkken DOLU sarı ada:
+   yalnızca simge rengi değişseydi "açık mı kapalı mı" ayrımı bir bakışta
+   seçilmiyordu ve düğme açık sanılıp ekran kararıyordu. */
+#custom-caffeine { color: @overlay1; }
+#privacy       { color: @red; }
+
+/* ── Durum sınıfları ─────────────────────────────────────────────────────── */
+/* Waybar `states` tanımlarına göre bu sınıfları otomatik ekler. */
+
+#cpu.warning,
+#memory.warning,
+#temperature.warning,
+#battery.warning:not(.charging) {
+    color: @warning;
+}
+
+#cpu.critical,
+#memory.critical,
 #temperature.critical {
-    color: #000000;
-    background-color: #f53c3c;
+    background-color: @critical;
+    color: @crust;
+    font-weight: 700;
 }
 
-/* Sistem tepsisi */
-#tray {
-    color: #ffffff;
-    background-color: #000000;
+/* Pil kritik seviyedeyken yanıp söner — ama yalnızca şarjda değilken. */
+#battery.critical:not(.charging) {
+    background-color: @critical;
+    color: @crust;
+    font-weight: 700;
+    animation: blink 1s steps(1) infinite;
 }
 
-/* Tray simgeleri için efektler */
+#battery.charging,
+#battery.plugged {
+    color: @ok;
+}
+
+#network.disconnected {
+    color: @critical;
+}
+
+#pulseaudio.muted,
+#bluetooth.off,
+#bluetooth.disabled {
+    color: @overlay0;
+}
+
+#custom-caffeine.activated {
+    background-color: @yellow;
+    color: @crust;
+    font-weight: 700;
+}
+
+/* ── Sistem tepsisi ──────────────────────────────────────────────────────── */
+#tray menu {
+    background-color: @mantle;
+    color: @text;
+    border: 1px solid @surface0;
+    border-radius: 10px;
+    padding: 6px;
+}
+
+#tray menu menuitem {
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+#tray menu menuitem:hover {
+    background-color: @surface0;
+}
+
 #tray > .passive {
     -gtk-icon-effect: dim;
 }
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
-    background-color: #eb4d4b;
+    background-color: @critical;
+    border-radius: 10px;
 }
 
-/* Blink animasyonu (pil kritik) */
+/* ── İpucu balonları (tooltip) ───────────────────────────────────────────── */
+tooltip {
+    background-color: @crust;
+    border: 1px solid @surface0;
+    border-radius: 10px;
+    padding: 4px;
+}
+
+tooltip label {
+    color: @text;
+    padding: 4px 6px;
+}
+
+/* ── Animasyon ───────────────────────────────────────────────────────────── */
+/* `steps(1)` ile keskin yanıp sönme: kademeli geçiş yerine net uyarı. */
 @keyframes blink {
-    to {
-        color: #ffffff;
-        background-color: #000000;
+    50% {
+        background-color: transparent;
+        color: @critical;
     }
 }

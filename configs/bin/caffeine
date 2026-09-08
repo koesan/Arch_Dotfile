@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════════════════
+#  caffeine — "beni uyutma" anahtarı
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  NEDEN VAR: Waybar'ın yerleşik `idle_inhibitor` modülü durumu yalnızca
+#  BELLEKTE tutar. Waybar her yeniden başladığında (config değişikliği,
+#  `killall waybar`, oturum açılışı) düğme sessizce KAPALI'ya döner; kullanıcı
+#  açık sandığı halde ekran kararır. Bu betik durumu bir dosyada tutar, böylece
+#  waybar yeniden başlasa da kahve açık kalır.
+#
+#  İKİ KAT GÜVENCE:
+#    1) Durum dosyası — hypridle'daki her listener `condition_cmd` ile bu
+#       dosyaya bakar; varsa hiçbir boşta-kalma eylemi çalışmaz.
+#    2) systemd inhibit kilidi — hypridle "systemd idle inhibit active"
+#       durumunu ayrıca izler ve logind `systemctl suspend` çağrısını da
+#       bloklar. Biri atlansa bile diğeri tutar.
+#
+#  Kullanım:
+#    caffeine toggle    aç/kapat (waybar tıklaması bunu çağırır)
+#    caffeine on|off    doğrudan ayarla
+#    caffeine status    waybar için JSON
+#    caffeine active    açıksa 0, kapalıysa 1 döner (betiklerden kullanmak için)
+# ═══════════════════════════════════════════════════════════════════════════
+set -uo pipefail
+
+# XDG_RUNTIME_DIR oturuma özeldir ve çıkışta temizlenir: kahve her açılışta
+# KAPALI başlar. İstenen bu — kapağı kapatıp giden biri makineyi sonsuza dek
+# uyanık bırakmasın.
+RUNTIME="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+STATE="$RUNTIME/caffeine"
+PIDFILE="$RUNTIME/caffeine.pid"
+
+# Waybar config'indeki "signal": 8 ile aynı olmalı (SIGRTMIN+8).
+SIGNAL=8
+
+is_on() { [[ -e "$STATE" ]]; }
+
+# Waybar'ı anında tazele; yoksa modül bir sonraki aralığa kadar eski durumu
+# gösterir. Waybar çalışmıyorsa sessizce geçilir.
+refresh_bar() { pkill -RTMIN+"$SIGNAL" waybar 2>/dev/null || true; }
+
+# Kilidin gerçekten ayakta olup olmadığını söyler. PID geri dönüşebildiği için
+# yalnızca "PID var mı" yetmez; sürecin adı da doğrulanır.
+inhibitor_alive() {
+    [[ -f "$PIDFILE" ]] || return 1
+    local pid
+    pid=$(cat "$PIDFILE" 2>/dev/null)
+    [[ -n "$pid" ]] || return 1
+    [[ "$(ps -o comm= -p "$pid" 2>/dev/null)" == "systemd-inhibit" ]]
+}
+
+stop_inhibitor() {
+    [[ -f "$PIDFILE" ]] || return 0
+    if inhibitor_alive; then
+        local pid; pid=$(cat "$PIDFILE")
+        pkill -P "$pid" 2>/dev/null || true   # bekleyen `sleep` çocuğu
+        kill "$pid" 2>/dev/null || true
+    fi
+    rm -f "$PIDFILE"
+}
+
+start_inhibitor() {
+    command -v systemd-inhibit >/dev/null 2>&1 || return 0
+    stop_inhibitor
+
+    # `setsid` ŞART. Waybar, on-click ile başlattığı komutu kendi süreç
+    # grubuna koyar ve waybar kapanırken o grubu topluca öldürür; setsid
+    # olmadan kilit waybar'la birlikte ölüyor, oysa bütün amaç waybar'dan
+    # bağımsız yaşamak. Ayrı bir oturuma alınca sinyal ona ulaşmaz.
+    #
+    # PID'i çocuk kendisi yazıyor: `setsid ... &` ardından `$!` okumak,
+    # setsid'in çatallanıp çatallanmamasına göre yanlış PID verebilir.
+    # `exec` sayesinde kabuk systemd-inhibit'e dönüşür, yani yazılan PID
+    # doğrudan kilidin PID'idir.
+    setsid sh -c '
+        echo $$ > "$1"
+        exec systemd-inhibit --what=idle:sleep --mode=block \
+             --who="Waybar caffeine" \
+             --why="Kullanıcı boşta kalma eylemlerini kapattı" \
+             sleep infinity
+    ' _ "$PIDFILE" >/dev/null 2>&1 &
+}
+
+# Durum dosyası "açık" diyorsa kilidin de ayakta olduğundan emin ol.
+# Waybar her açılışta `caffeine status` çağırdığı için, kilit herhangi bir
+# sebeple düşmüşse (waybar çökmesi, elle kill) burada kendiliğinden geri gelir.
+ensure_inhibitor() {
+    is_on || return 0
+    inhibitor_alive || start_inhibitor
+}
+
+turn_on()  { : > "$STATE"; start_inhibitor; refresh_bar; }
+turn_off() { rm -f "$STATE"; stop_inhibitor; refresh_bar; }
+
+print_status() {
+    ensure_inhibitor
+    if is_on; then
+        printf '{"text":"󰅶","alt":"activated","class":"activated","tooltip":"Kahve AÇIK — ekran kararmaz, kilitlenmez, uyumaz\\nTıkla: kapat"}\n'
+    else
+        printf '{"text":"󰾪","alt":"deactivated","class":"deactivated","tooltip":"Kahve kapalı — 5 dk sonra ekran kapanır ve kilitlenir\\nTıkla: aç"}\n'
+    fi
+}
+
+case "${1:-status}" in
+    on)     turn_on ;;
+    off)    turn_off ;;
+    toggle) if is_on; then turn_off; else turn_on; fi ;;
+    status) print_status ;;
+    active) is_on ;;
+    *)      printf 'kullanım: %s {toggle|on|off|status|active}\n' "${0##*/}" >&2; exit 2 ;;
+esac
