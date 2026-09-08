@@ -41,7 +41,7 @@ oturumunu seçmeniz yeterli.
 | --- | --- |
 | `--dry-run` | Hiçbir değişiklik yapmadan tüm komutları listeler |
 | `--check` | Kurulum sonrası doğrulama raporu üretir |
-| `--minimal` | LibreOffice, Docker, VS Code, Brave, Flatpak, MS fontlarını atlar |
+| `--minimal` | İsteğe bağlı paketleri atlar: LibreOffice, Docker, VS Code, Brave, Flatpak (+MarkText), MS fontları, xsensors |
 | `--no-aur` | AUR paketlerini atlar (wlogout ve Catppuccin temaları kurulmaz) |
 | `-y`, `--yes` | Soru sormaz, tam otomatik kurar |
 | `--help` | Yardım |
@@ -172,6 +172,11 @@ güncellediğinizde ayarlarınız kalır.
 | `SUPER + SHIFT + ok` | Pencereyi taşı |
 | `SUPER + CTRL + ok` | Yeniden boyutlandır |
 | `SUPER + ALT + ok` | Diğer monitöre taşı |
+| `SUPER + ALT + H/J/K/L` | Odağı taşı (vim yönleri) |
+| `SUPER + P` | Pseudotile (dwindle) |
+| `SUPER + J` | Bölme yönünü çevir |
+| `SUPER + sol tık sürükle` | Pencereyi taşı |
+| `SUPER + sağ tık sürükle` | Pencereyi yeniden boyutlandır |
 
 ### Oturum ve sistem
 | Kısayol | İşlev |
@@ -184,14 +189,28 @@ güncellediğinizde ayarlarınız kalır.
 | `SUPER + U` | Waybar'ı yeniden başlat |
 | `SUPER + 1..0` | Workspace değiştir |
 | `SUPER + SHIFT + 1..0` | Pencereyi workspace'e taşı |
-| `SUPER + S` | Scratchpad |
+| `SUPER + S` | Scratchpad (özel workspace) |
+| `SUPER + SHIFT + S` | Pencereyi scratchpad'e taşı |
+| `SUPER + fare tekerleği` | Bir sonraki / önceki workspace |
 
 ### Ekran görüntüsü
 | Kısayol | İşlev |
 | --- | --- |
 | `PRINT` | Bölge seç → swappy ile düzenle |
+| `SUPER + PRINT` | Bölge seç (PRINT ile aynı) |
 | `SHIFT + PRINT` | Tam ekran → panoya + `~/Resimler` |
 | `ALT + PRINT` | Aktif pencere → panoya + `~/Resimler` |
+
+### Dizüstü / medya tuşları
+Hepsi **ekran kilitliyken de çalışır**; ses ve parlaklık tuşları basılı
+tutunca tekrar eder.
+
+| Tuş | İşlev |
+| --- | --- |
+| `Ses aç / kıs / sustur` | `wpctl` ile ana çıkış (açarken %100'ü aşmaz) |
+| `Mikrofonu sustur` | `wpctl` ile varsayılan giriş |
+| `Parlaklık +/−` | `brightnessctl` (%5 adım, algısal eğri; en düşükte ekran tamamen kararmaz) |
+| `Oynat / duraklat / ileri / geri` | `playerctl` |
 
 ---
 
@@ -204,7 +223,9 @@ Alacritty · Nemo
 ### Sistem
 PipeWire (+ WirePlumber, pavucontrol) · NetworkManager · BlueZ + Blueman ·
 XDG portalları (hyprland + gtk) · hyprpolkitagent · brightnessctl · playerctl ·
-cliphist + wl-clipboard · grim/slurp/swappy
+cliphist + wl-clipboard · grim/slurp/swappy · upower + power-profiles-daemon ·
+gvfs (çöp kutusu, USB/telefon) · nwg-look (GTK tema aracı) · btop · htop ·
+fastfetch · tree · xsensors (isteğe bağlı)
 
 ### Geliştirme
 Git + base-devel · Python (pip, virtualenv) · Docker · VS Code ·
@@ -261,8 +282,9 @@ gerekmez.
 modülü durumu yalnızca bellekte tutar: waybar her yeniden başladığında (config
 değişikliği, oturum açılışı, `killall waybar`) sessizce kapalıya döner —
 kullanıcı düğmeyi açık sanırken ekran 5 dakikada kararır. Bu depoda durumu
-`~/.local/bin/caffeine` betiği `$XDG_RUNTIME_DIR/caffeine` dosyasında tutar, bu
-yüzden waybar'dan bağımsız yaşar. İki bağımsız katman koruma sağlar:
+`~/.local/bin/caffeine` betiği (kaynağı: `configs/bin/caffeine`)
+`$XDG_RUNTIME_DIR/caffeine` dosyasında tutar, bu yüzden waybar'dan bağımsız
+yaşar. İki bağımsız katman koruma sağlar:
 
 1. `hypridle.conf` içindeki her listener `condition_cmd` ile o dosyaya bakar;
 2. betik ayrıca bir systemd `idle:sleep` kilidi alır (`systemd-inhibit --list`
