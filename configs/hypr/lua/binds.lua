@@ -29,9 +29,12 @@ local apps = {
     monitor      = "alacritty -e btop",
 }
 
--- Ekran görüntüsü hedefi: XDG "Resimler" dizini, tanımlı değilse ~/Resimler.
-local shots = '"$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Resimler")"'
-local stamp = '"$(date +%Y-%m-%d_%H-%M-%S)".png'
+-- Ekran görüntüsü betiği. Kısayollar komutu doğrudan çalıştırmaz; hepsi
+-- ~/.local/bin/screenshot üzerinden geçer (bkz. configs/bin/screenshot):
+-- hedef dizin, pano kopyası ve "kaydedildi" bildirimi orada tek yerde durur.
+-- Tam yol veriliyor: Hyprland'in PATH'i her oturum yöneticisinde
+-- ~/.local/bin içermez.
+local shot = (os.getenv("HOME") or "~") .. "/.local/bin/screenshot"
 
 -- ---------------------------------------------------------------------------
 -- Uygulamalar
@@ -142,13 +145,14 @@ hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 -- Ekran görüntüsü
 -- ---------------------------------------------------------------------------
 -- Bölge seç → swappy ile düzenle (ok/kutu/bulanıklık çizip kaydedebilirsiniz).
-local shot_region = 'grim -g "$(slurp -d)" - | swappy -f -'
+-- swappy'deki kaydet düğmesi görüntüyü ~/.config/swappy/config içindeki
+-- save_dir dizinine yazar; o dosya olmadan görüntü "$HOME/Desktop" altına
+-- düşüyor ve kaybolmuş gibi görünüyordu.
+local shot_region = shot .. " region"
 -- Tam ekran → hem panoya kopyala hem dosyaya kaydet.
-local shot_full   = 'mkdir -p ' .. shots .. ' && grim - | tee ' .. shots .. '/' .. stamp .. ' | wl-copy'
--- Aktif pencere → panoya kopyala hem dosyaya kaydet.
-local shot_window = 'mkdir -p ' .. shots .. ' && grim -g "$(hyprctl activewindow -j | '
-    .. [[jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"')" - | tee ]]
-    .. shots .. '/' .. stamp .. ' | wl-copy'
+local shot_full   = shot .. " full"
+-- Aktif pencere → hem panoya kopyala hem dosyaya kaydet.
+local shot_window = shot .. " window"
 
 hl.bind("PRINT",               hl.dsp.exec_cmd(shot_region), { description = "Ekran görüntüsü: bölge" })
 hl.bind(mod .. " + PRINT",     hl.dsp.exec_cmd(shot_region), { description = "Ekran görüntüsü: bölge" })

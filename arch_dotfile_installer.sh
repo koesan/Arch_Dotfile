@@ -198,9 +198,10 @@ declare -a PKG_CORE=(
     playerctl                     # medya tuşları
     upower power-profiles-daemon  # pil durumu ve güç profilleri
 
-    # Ekran görüntüsü ve pano (hypr/lua/binds.lua)
+    # Ekran görüntüsü ve pano (hypr/lua/binds.lua → bin/screenshot)
     grim slurp swappy
     wl-clipboard cliphist jq      # jq: aktif pencere görüntüsü için
+    libnotify                     # notify-send: "kaydedildi" bildirimi
 
     # X11 uyumluluğu
     xorg-xwayland xorg-xhost
@@ -792,7 +793,7 @@ setup_dotfiles() {
     # dökümünü oraya çöp olarak bırakıyor hem de cp -r iç içe kopyalama hatası
     # yüzünden ~/.config/nemo/nemo/ dizinini oluşturuyordu.
     local d
-    for d in alacritty waybar wlogout wofi hypr mako rofi; do
+    for d in alacritty waybar wlogout wofi hypr mako rofi swappy; do
         deploy_dir "$REPO_DIR/configs/$d" "$HOME/.config/$d"
     done
 
@@ -815,6 +816,18 @@ setup_dotfiles() {
     # ($HOME/.local/bin/caffeine) çağırdığı için PATH'e bağımlı değildir.
     deploy_file "$REPO_DIR/configs/bin/caffeine" "$HOME/.local/bin/caffeine"
     run chmod +x "$HOME/.local/bin/caffeine"
+
+    # Panelin workspace göstergesi. Yerleşik `hyprland/workspaces` modülünün
+    # tıklaması Hyprland'in Lua yapılandırma biçiminde çalışmıyor (ayrıntı:
+    # configs/waybar/config ve configs/bin/waybar-workspace başlıkları).
+    deploy_file "$REPO_DIR/configs/bin/waybar-workspace" "$HOME/.local/bin/waybar-workspace"
+    run chmod +x "$HOME/.local/bin/waybar-workspace"
+
+    # Ekran görüntüsü sarmalayıcısı. PRINT kısayolları grim/slurp/swappy'yi
+    # doğrudan değil bu betik üzerinden çağırır: hedef dizin, pano kopyası ve
+    # "kaydedildi" bildirimi tek yerde toplanır (configs/bin/screenshot).
+    deploy_file "$REPO_DIR/configs/bin/screenshot" "$HOME/.local/bin/screenshot"
+    run chmod +x "$HOME/.local/bin/screenshot"
 
     # Ev dizinine gidenler — BİRLEŞTİRİLİR, silinmez: bu dizinlerde başka
     # kaynaklardan gelmiş temalar olabilir (nwg-look, AUR paketleri).
@@ -925,16 +938,37 @@ setup_waybar_sensor() {
         return 0
     fi
 
+    # ── Yolu waybar'a yaz ───────────────────────────────────────────────────
+    #
+    # Buraya DÜZ "hwmon-path" YAZILMIYOR. Bulunan yol şu biçimdedir:
+    #   /sys/devices/pci0000:00/0000:00:18.3/hwmon/hwmon3/temp1_input
+    # ve içindeki hwmonN numarası çekirdek modüllerinin yüklenme sırasına
+    # bağlıdır: bir sonraki açılışta aynı çip hwmon5 olabilir. O anda waybar ya
+    # dosyayı hiç bulamaz ya da o numaraya denk gelen BAŞKA bir çipin (NVMe
+    # SSD, GPU) sıcaklığını CPU diye gösterir. Panelde ara sıra görülen
+    # "yanlış / çok yüksek sıcaklık" tam olarak budur.
+    #
+    # Çözüm waybar'ın "hwmon-path-abs" + "input-filename" çiftidir: cihazın
+    # SABİT yolu (hwmon/ dizinine kadar) verilir, hwmonN alt dizinini waybar
+    # çalışma anında kendisi bulur.  (bkz. man 5 waybar-temperature)
+    local input_name abs_dir
+    input_name=$(basename "$path")          # temp1_input
+    abs_dir=$(dirname "$(dirname "$path")") # .../hwmon   (hwmonN'siz)
+
     if $DRY_RUN; then
-        printf '%s  [kuru] waybar/config → hwmon-path: %s%s\n' "$YELLOW" "$path" "$NC"
+        printf '%s  [kuru] waybar/config → hwmon-path-abs: %s (%s)%s\n' \
+            "$YELLOW" "$abs_dir" "$input_name" "$NC"
         return 0
     fi
 
-    # Önce varsa eski satırı temizle, sonra "temperature": { bloğunun hemen
-    # ardına ekle. Böylece script tekrar çalıştırıldığında satır çoğalmaz.
-    sed -i '/^        "hwmon-path":/d' "$cfg"
-    sed -i "s|^    \"temperature\": {|    \"temperature\": {\n        \"hwmon-path\": \"$path\",|" "$cfg"
-    success "waybar sıcaklık sensörü ayarlandı"
+    # Önce varsa eski satırları temizle (eski sürümlerin yazdığı "hwmon-path"
+    # dahil), sonra "temperature": { bloğunun hemen ardına ekle. Böylece script
+    # tekrar çalıştırıldığında satırlar çoğalmaz.
+    sed -i '/^        "hwmon-path":/d'      "$cfg"
+    sed -i '/^        "hwmon-path-abs":/d'  "$cfg"
+    sed -i '/^        "input-filename":/d'  "$cfg"
+    sed -i "s|^    \"temperature\": {|    \"temperature\": {\n        \"hwmon-path-abs\": \"$abs_dir\",\n        \"input-filename\": \"$input_name\",|" "$cfg"
+    success "waybar sıcaklık sensörü ayarlandı ($name → $abs_dir/*/$input_name)"
 }
 
 #=============================================================================
@@ -1331,6 +1365,39 @@ setup_user_dirs() {
     success "Ekran görüntüsü dizini: ${pics/#$HOME/\~}"
 }
 
+#-----------------------------------------------------------------------------
+#  swappy kayıt dizini
+#
+#  NEDEN GEREKLİ: Bölge ekran görüntüsü (PRINT) swappy'de açılır ve araç
+#  çubuğundaki kaydet düğmesi görüntüyü swappy'nin `save_dir` ayarına yazar.
+#  Ayar yoksa swappy sırayla $XDG_DESKTOP_DIR → $XDG_CONFIG_HOME/Desktop →
+#  $HOME/Desktop dener. XDG_DESKTOP_DIR bir ORTAM DEĞİŞKENİ DEĞİLDİR
+#  (~/.config/user-dirs.dirs içindedir, kabuğa export edilmez), dolayısıyla
+#  her zaman son basamak kazanır: görüntü, masaüstüyle hiçbir ilgisi olmayan
+#  "$HOME/Desktop" dizinine sessizce düşer. Türkçe oturumda gerçek masaüstü
+#  "Masaüstü" olduğu için dosya hiçbir yerde görünmez — düğmeye basılır, hiçbir
+#  şey olmamış gibi durur.
+#
+#  Bu yüzden save_dir, kullanıcının GERÇEK "Resimler" dizinine sabitlenir.
+#  Depodaki configs/swappy/config yalnızca varsayılan bir değer taşır; doğru
+#  yol makineye göre burada yazılır (dil ve XDG ayarları kullanıcıya bağlıdır).
+setup_swappy() {
+    step "Ekran görüntüsü kayıt dizini (swappy)"
+    local cfg="$HOME/.config/swappy/config"
+    [[ -f "$cfg" ]] || { warning "swappy/config yok, atlandı"; return 1; }
+
+    local pics
+    pics=$(xdg-user-dir PICTURES 2>/dev/null) || pics=""
+    [[ -n "$pics" ]] || pics="$HOME/Resimler"
+
+    $DRY_RUN && { printf '%s  [kuru] swappy save_dir → %s%s\n' "$YELLOW" "$pics" "$NC"; return 0; }
+
+    run mkdir -p "$pics"
+    # Yol içinde "|" bulunamayacağı için sed ayracı güvenli.
+    sed -i "s|^save_dir=.*|save_dir=$pics|" "$cfg"
+    success "  swappy save_dir → ${pics/#$HOME/\~}"
+}
+
 setup_xhost() {
     # Root olarak açılan grafik uygulamaların XWayland'e erişebilmesi için.
     # Satır zaten varsa TEKRAR EKLENMEZ — eski sürüm her çalıştırmada
@@ -1383,7 +1450,7 @@ run_checks() {
         "jq:pencere görüntüsü" "brightnessctl:parlaklık" "playerctl:medya tuşları" \
         "wpctl:ses kontrolü" "pavucontrol:ses ayarları" "blueman-manager:bluetooth" \
         "nwg-look:GTK tema aracı" "zsh:kabuk" "btop:sistem izleyici" \
-        "xdg-user-dir:kullanıcı dizinleri"
+        "xdg-user-dir:kullanıcı dizinleri" "notify-send:bildirim gönderme"
     do
         check_cmd "${pair%%:*}" "${pair#*:}" || ((fails++))
     done
@@ -1407,6 +1474,9 @@ run_checks() {
         "$HOME/.config/gtk-4.0/settings.ini:GTK4 teması" \
         "$HOME/.icons/default/index.theme:imleç teması" \
         "$HOME/.local/bin/caffeine:kahve (uyku engelleme) düğmesi" \
+        "$HOME/.local/bin/waybar-workspace:workspace göstergesi" \
+        "$HOME/.local/bin/screenshot:ekran görüntüsü betiği" \
+        "$HOME/.config/swappy/config:görüntü düzenleyici (kayıt dizini)" \
         "$HOME/.zshrc:zsh yapılandırması"
     do
         check_file "${pair%%:*}" "${pair#*:}" || ((fails++))
@@ -1583,6 +1653,7 @@ main() {
     setup_portals
     setup_zsh
     setup_user_dirs
+    setup_swappy
     setup_xhost
     setup_python
     setup_nemo

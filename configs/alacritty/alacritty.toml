@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════════
 #  Alacritty — terminal
-#  Palet: Catppuccin Mocha (themes/catppuccin_mocha.toml)
+#  Palet: Blood Moon (themes/blood_moon.toml)
 #  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
 #
 #  Not: Alacritty 0.14'ten beri `import` anahtarı [general] tablosunun
@@ -24,6 +24,16 @@ WINIT_X11_SCALE_FACTOR = "1.0"
 position = "None"
 dynamic_padding = true
 decorations = "none"
+# opacity: 1.0 = tamamen opak, 0.0 = tamamen saydam. 0.9 hafif saydamlık verir.
+#
+# Saydamlığın GÖZLE NE KADAR görüldüğü tema arka planına bağlıdır: Blood Moon'un
+# arka planı neredeyse siyahtır (#10100E) ve duvar kağıdı bu değerde bile açıkça
+# okunur. Catppuccin Mocha'nın arka planı (#1E1E2E) daha açık ve mavimsi olduğu
+# için aynı 0.9 değerinde pencere opak görünür — tema değiştirirken bunu
+# hesaba katın, opacity'yi düşürmek gerekebilir.
+#
+# blur = false: bulanıklık Alacritty'de değil, Hyprland'in kendi blur'unda
+# ayarlanır (hypr/lua/look.lua → decoration.blur).
 opacity = 0.9 #1.0
 blur = false
 startup_mode = "Windowed"
@@ -154,4 +164,4 @@ ipc_socket = true
 ## GENERAL --------------------------------------------------------
 
 ## Import additional configuration files.
-import = ["~/.config/alacritty/themes/catppuccin_mocha.toml"]
+import = ["~/.config/alacritty/themes/blood_moon.toml"]

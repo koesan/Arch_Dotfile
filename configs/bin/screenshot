@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════════════════
+#  screenshot — ekran görüntüsü sarmalayıcısı
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  NEDEN VAR: Görüntü alma komutları eskiden doğrudan hypr/lua/binds.lua
+#  içinde tek satırlık kabuk dizeleriydi. İki sorun çıkardı:
+#
+#    1) BÖLGE görüntüsü swappy'ye aktarılıyor, swappy'nin kaydet düğmesi ise
+#       görüntüyü kendi `save_dir` ayarına yazıyordu. Ayar yoksa bu dizin
+#       "$HOME/Desktop" oluyor (ayrıntı: configs/swappy/config başlığı) ve
+#       kullanıcı düğmeye bastığı halde dosyayı HİÇBİR YERDE bulamıyordu.
+#    2) Hiçbir modda geri bildirim yoktu. Görüntünün alınıp alınmadığı,
+#       nereye kaydedildiği yalnızca dizine bakarak anlaşılıyordu.
+#
+#  Bu betik ikisini de çözer: hedef dizini swappy ile ORTAK kaynaktan okur ve
+#  her kayıttan sonra dosya yolunu bildirimle gösterir.
+#
+#  Kullanım:
+#    screenshot region    bölge seç → swappy ile düzenle → kaydet (PRINT)
+#    screenshot full      tüm ekran → dosya + pano       (SHIFT+PRINT)
+#    screenshot window    odaklı pencere → dosya + pano  (ALT+PRINT)
+#
+#  Bağımlılıklar: grim, slurp, swappy, wl-copy, jq (yalnız window), notify-send
+# ═══════════════════════════════════════════════════════════════════════════
+set -uo pipefail
+
+# ── Hedef dizin ────────────────────────────────────────────────────────────
+# Tek doğru kaynak: swappy'nin yapılandırması. Böylece bölge görüntüsü
+# (swappy kaydeder) ile tam ekran/pencere görüntüsü (bu betik kaydeder) ASLA
+# farklı dizinlere düşmez. Dosya yoksa XDG "Resimler" dizinine geri dönülür.
+save_dir() {
+    local cfg="${XDG_CONFIG_HOME:-$HOME/.config}/swappy/config" dir=""
+
+    if [[ -f "$cfg" ]]; then
+        dir=$(sed -n 's/^[[:space:]]*save_dir[[:space:]]*=[[:space:]]*//p' "$cfg" | tail -n1)
+        dir=${dir%$'\r'}
+    fi
+    [[ -n "$dir" ]] || dir=$(xdg-user-dir PICTURES 2>/dev/null)
+    [[ -n "$dir" ]] || dir="$HOME/Resimler"
+
+    # swappy save_dir içinde ortam değişkeni kabul eder; burada yalnızca baştaki
+    # $HOME / ~ genişletilir. `eval` bilerek kullanılmıyor: yapılandırma dosyası
+    # kabuk kodu çalıştırmak için bir kapı olmamalı.
+    dir=${dir/#\$HOME/$HOME}
+    dir=${dir/#\~/$HOME}
+    printf '%s' "$dir"
+}
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 || return 0
+    # -i "$2": bildirimde küçük önizleme olarak görüntünün kendisi gösterilir.
+    notify-send -a "Ekran görüntüsü" -i "${2:-camera-photo}" "$1" "${3:-}"
+}
+
+die() {
+    printf 'screenshot: %s\n' "$1" >&2
+    notify "Ekran görüntüsü alınamadı" camera-photo "$1"
+    exit 1
+}
+
+# ── Ortak hazırlık ─────────────────────────────────────────────────────────
+command -v grim >/dev/null 2>&1 || die "grim kurulu değil"
+
+mode=${1:-region}
+dir=$(save_dir)
+mkdir -p "$dir" || die "dizin oluşturulamadı: $dir"
+file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
+
+# Kaydedilen dosyayı panoya da koy: yapıştırmak için dosyayı açmak gerekmesin.
+copy_and_notify() {
+    local f="$1" what="$2"
+    command -v wl-copy >/dev/null 2>&1 && wl-copy --type image/png < "$f"
+    notify "$what kaydedildi" "$f" "${f/#$HOME/\~}"
+}
+
+case "$mode" in
+    # ── Bölge ──────────────────────────────────────────────────────────────
+    # Görüntü diske değil swappy'ye aktarılır; kaydetme kararını kullanıcı
+    # swappy içinde verir. Bu yüzden dosya adını burada değil swappy'nin
+    # `save_filename_format` ayarı belirler.
+    region)
+        command -v slurp  >/dev/null 2>&1 || die "slurp kurulu değil"
+        command -v swappy >/dev/null 2>&1 || die "swappy kurulu değil"
+
+        geom=$(slurp -d 2>/dev/null) || exit 0   # ESC ile iptal: sessizce çık
+        [[ -n "$geom" ]] || exit 0
+
+        # swappy'nin kaydettiği dosyayı yakalamak için zaman işareti. `find
+        # -newer` bir DOSYAYLA karşılaştırdığı için referans dosya gerekiyor.
+        marker=$(mktemp) || die "geçici dosya oluşturulamadı"
+        trap 'rm -f "$marker"' EXIT
+
+        grim -g "$geom" - | swappy -f - || die "swappy çalıştırılamadı"
+
+        # swappy kapandı: bu sırada hedef dizine düşen her yeni dosya, kaydet
+        # düğmesine basıldığı anlamına gelir.
+        newest=""
+        while IFS= read -r f; do newest="$f"; done < <(
+            find "$dir" -maxdepth 1 -type f -newer "$marker" -name '*.png' -printf '%T@ %p\n' 2>/dev/null |
+                sort -n | cut -d' ' -f2-
+        )
+        # Hiçbir yeni dosya yoksa kullanıcı kaydetmeden kapatmıştır: sessiz çık.
+        if [[ -n "$newest" ]]; then
+            copy_and_notify "$newest" "Bölge görüntüsü"
+        fi
+        ;;
+
+    # ── Tüm ekran ──────────────────────────────────────────────────────────
+    full)
+        grim "$file" || die "ekran görüntüsü alınamadı"
+        copy_and_notify "$file" "Tam ekran görüntüsü"
+        ;;
+
+    # ── Odaklı pencere ─────────────────────────────────────────────────────
+    window)
+        command -v hyprctl >/dev/null 2>&1 || die "hyprctl bulunamadı"
+        command -v jq      >/dev/null 2>&1 || die "jq kurulu değil"
+
+        geom=$(hyprctl activewindow -j | jq -er '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"') \
+            || die "odaklı pencere bulunamadı"
+
+        grim -g "$geom" "$file" || die "pencere görüntüsü alınamadı"
+        copy_and_notify "$file" "Pencere görüntüsü"
+        ;;
+
+    *)
+        printf 'Kullanım: screenshot [region|full|window]\n' >&2
+        exit 1
+        ;;
+esac

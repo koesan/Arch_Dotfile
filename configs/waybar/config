@@ -25,8 +25,16 @@
     //   sol   → açık uygulamalar (görev çubuğu + odaklı pencerenin başlığı)
     //   orta  → workspace ("sekme") göstergesi
     //   sağ   → durum modülleri; saat EN SAĞDA, pilin sağında
-    "modules-left":   ["wlr/taskbar", "hyprland/submap", "hyprland/window"],
-    "modules-center": ["hyprland/workspaces"],
+    // Not: "hyprland/submap" bilerek listede DEĞİL. Bu depodaki Lua
+    // yapılandırmasında hiç submap tanımlanmıyor, dolayısıyla modül hiçbir
+    // zaman bir şey göstermiyordu. Tanımı aşağıda duruyor: kendi submap'inizi
+    // eklerseniz modül adını bu listeye geri yazmanız yeterli.
+    "modules-left":   ["wlr/taskbar", "hyprland/window"],
+    // Workspace göstergesi TEK modül değil, workspace başına bir "custom"
+    // modül. Sebebi aşağıda `custom/ws1` bloğunda anlatılıyor: yerleşik
+    // `hyprland/workspaces` modülünün tıklaması Hyprland'in Lua yapılandırma
+    // biçiminde çalışmıyor.
+    "modules-center": ["custom/ws1", "custom/ws2", "custom/ws3", "custom/ws4", "custom/ws5", "custom/ws6", "custom/ws7", "custom/ws8", "custom/ws9", "custom/ws10"],
     "modules-right":  [
         "privacy",
         "custom/caffeine",
@@ -38,7 +46,6 @@
         "cpu",
         "memory",
         "temperature",
-        "tray",
         "battery",
         "clock"
     ],
@@ -47,27 +54,134 @@
     // Sol
     // ───────────────────────────────────────────────────────────────────────
 
-    "hyprland/workspaces": {
-        // Numara göster. Durumlar (aktif / acil / boş) style.css'te renklendirilir;
-        // format-icons kullanılmıyor çünkü listede olmayan workspace'ler
-        // "default" simgesine düşer ve 7-10 numaraları kaybolurdu.
-        "format": "{name}",
+    // ───────────────────────────────────────────────────────────────────────
+    //  Workspace göstergesi — custom/ws1 … custom/ws10
+    // ───────────────────────────────────────────────────────────────────────
+    //
+    //  NEDEN YERLEŞİK `hyprland/workspaces` KULLANILMIYOR:
+    //  O modül bir numaraya tıklandığında Hyprland soketine eski biçim bir
+    //  komut yazar — `dispatch workspace 2`. Hyprland 0.56'dan itibaren,
+    //  yapılandırma Lua biçimindeyse (bu depoda öyle: hyprland.lua) soketten
+    //  gelen dispatch metni bir LUA İFADESİ olarak değerlendirilir:
+    //
+    //      return hl.dispatch(workspace 2)      ← geçersiz Lua, sözdizimi hatası
+    //      return hl.dispatch(hl.dsp.focus({ workspace = 2 }))   ← doğrusu
+    //
+    //  Waybar bu yeni söz dizimini bilmiyor ve `hyprland/workspaces` modülünde
+    //  komutu dışarıdan değiştirecek bir "on-click" seçeneği YOK
+    //  (bkz. man 5 waybar-hyprland-workspaces). Bu yüzden tıklamalar sessizce
+    //  hiçbir şey yapmıyordu. Kendiniz doğrulayabilirsiniz:
+    //
+    //      hyprctl dispatch workspace 1
+    //      → error: [string "return hl.dispatch(workspace 1)"]:1: ')' expected
+    //
+    //  Çözüm: gösterge workspace başına bir `custom` modüle bölündü. Durumu ve
+    //  tıklamayı ~/.local/bin/waybar-workspace üretiyor; o betik Lua biçimini
+    //  kullanır, eski biçime de geri düşer (taşınabilirlik için).
+    //
+    //  DAVRANIŞ: betik boş çıktı verdiğinde waybar modülü hiç çizmez, yani
+    //  yalnızca DOLU workspace'ler (artı odaklı olan) görünür — yerleşik
+    //  modülün persistent-workspaces'sız davranışının aynısı.
+    //
+    //  GÜNCELLEME: saniyede bir yoklama YOK. Hyprland'in Lua yapılandırması
+    //  (lua/waybar.lua) workspace/pencere olaylarında SIGRTMIN+9 gönderir;
+    //  modüller yalnızca o an tazelenir. Sinyal numarası orada da aynı olmalı.
+    //
+    //  Kaç tane? Klavye kısayolları 1-10 arasını bağlıyor (lua/binds.lua),
+    //  liste de onunla eşleşiyor. Daha azını istiyorsanız hem buradaki
+    //  blokları hem de yukarıdaki "modules-center" listesini kısaltın.
 
-        // "persistent-workspaces" BİLEREK YOK.
-        // Eskiden { "*": [1,2,3,4,5] } yazıyordu: hiç pencere açılmamış olsa
-        // bile 1-5 arası beş kutu boşuna duruyordu. Anahtar olmadığında waybar
-        // yalnızca DOLU workspace'leri (artı o an odaklı olanı) çizer:
-        //   pencere yok            → 1
-        //   iki workspace dolu     → 1 2
-        //   üç workspace dolu      → 1 2 3
-        // Listeyi yeniden sabitlemek isterseniz anahtarı geri ekleyin; ekran
-        // adı yazmamak için "*" kullanın (bkz. hypr/lua/local.lua.example).
-
-        // Yalnızca o monitöre ait workspace'leri göster.
-        "all-outputs": false,
-        "on-click": "activate"
+    "custom/ws1": {
+        "exec":        "$HOME/.local/bin/waybar-workspace 1",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      9,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/waybar-workspace focus 1"
     },
 
+    "custom/ws2": {
+        "exec":        "$HOME/.local/bin/waybar-workspace 2",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      9,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/waybar-workspace focus 2"
+    },
+
+    "custom/ws3": {
+        "exec":        "$HOME/.local/bin/waybar-workspace 3",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      9,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/waybar-workspace focus 3"
+    },
+
+    "custom/ws4": {
+        "exec":        "$HOME/.local/bin/waybar-workspace 4",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      9,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/waybar-workspace focus 4"
+    },
+
+    "custom/ws5": {
+        "exec":        "$HOME/.local/bin/waybar-workspace 5",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      9,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/waybar-workspace focus 5"
+    },
+
+    "custom/ws6": {
+        "exec":        "$HOME/.local/bin/waybar-workspace 6",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      9,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/waybar-workspace focus 6"
+    },
+
+    "custom/ws7": {
+        "exec":        "$HOME/.local/bin/waybar-workspace 7",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      9,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/waybar-workspace focus 7"
+    },
+
+    "custom/ws8": {
+        "exec":        "$HOME/.local/bin/waybar-workspace 8",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      9,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/waybar-workspace focus 8"
+    },
+
+    "custom/ws9": {
+        "exec":        "$HOME/.local/bin/waybar-workspace 9",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      9,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/waybar-workspace focus 9"
+    },
+
+    "custom/ws10": {
+        "exec":        "$HOME/.local/bin/waybar-workspace 10",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      9,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/waybar-workspace focus 10"
+    },
+
+    // Yalnızca modules-left listesine eklenirse çizilir (bkz. yukarıdaki not).
     "hyprland/submap": {
         "format": "󰌆 {}",
         "tooltip": false
@@ -258,30 +372,48 @@
 
     "temperature": {
         // ÖNEMLİ — bu blok makineye özeldir ve kurulum betiği tarafından
-        // otomatik doldurulur (setup_waybar_sensor).
+        // otomatik doldurulur (setup_waybar_sensor). Depoda hiçbir yol
+        // YAZMIYOR; donanıma bağlı değer kurulum anında eklenir.
         //
-        // Eski config "/sys/class/hwmon/hwmon2/temp1_input" kullanıyordu:
-        // hwmonN numaraları her açılışta değişebildiği için bazen NVMe SSD'nin
-        // sıcaklığı CPU diye gösteriliyordu. Sonraki denemede sabit bir PCI
-        // yolu yazılmıştı; o da yalnızca tek bir makinede doğruydu.
-        //
-        // Bu yüzden depoda hiçbir yol YAZMIYOR: donanıma bağlı değer
-        // kurulum anında yazılır (setup_waybar_sensor → "hwmon-path" satırı).
+        // YAZILAN ANAHTARLAR: "hwmon-path-abs" + "input-filename".
+        // Tek başına "hwmon-path" KULLANILMIYOR, çünkü o yol
+        //     /sys/devices/pci0000:00/0000:00:18.3/hwmon/hwmon3/temp1_input
+        // biçimindedir ve içindeki hwmonN numarası SÜRÜCÜLERİN YÜKLENME
+        // SIRASINA göre her açılışta değişebilir. Numara kaydığında waybar ya
+        // hiçbir şey okuyamaz ya da başka bir çipi (NVMe SSD, GPU) CPU diye
+        // gösterir — panelde "yanlış sıcaklık" olarak görünen tam olarak budur.
+        // "hwmon-path-abs" ise cihazın SABİT PCI yolunu alır ve hwmonN alt
+        // dizinini waybar çalışma anında kendisi bulur:
+        //     "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:18.3/hwmon",
+        //     "input-filename": "temp1_input"
         //
         // DİKKAT: waybar hiçbir hwmon anahtarı yoksa
         // /sys/class/thermal/thermal_zone0 üzerinden okur — ve o dosya her
         // makinede YOKTUR (ör. bu depoyu geliştiren makinede /sys/class/thermal
         // yalnızca cooling_device* içeriyor). O durumda waybar modülü sessizce
         // devre dışı bırakır. Kurulum betiği bu yüzden sırayla k10temp /
-        // zenpower / coretemp → acpitz → herhangi bir hwmon girdisi arar ve
-        // bulduğunu buraya yazar.
+        // zenpower / coretemp → acpitz → herhangi bir hwmon girdisi arar.
         //
         // Kendi yolunuzu görmek için:
         //   for i in /sys/class/hwmon/hwmon*/temp*_input; do \
         //     echo "$(cat "$(dirname "$i")"/name) -> $i"; done
-        "interval": 5,
-        "critical-threshold": 85,
-        "warning-threshold": 70,
+
+        // EŞİKLER — panelin sarı/kırmızıya dönme noktaları.
+        // Eskiden 70/85 yazıyordu. Bu değerler bir MASAÜSTÜ için bile düşük,
+        // dizüstü için tamamen yanlış: modern bir CPU'nun kritik sıcaklığı
+        // (Tjmax) 100-105 °C'dir ve işlemci oraya varmadan kendini kısmaz.
+        // AMD'nin Tctl sensörü ayrıca çok kıpırdaktır — tek bir çekirdek bir
+        // anlığına turbo yapınca okuma 80'i geçip hemen 50'lere döner. 70/85
+        // eşikleriyle panel sürekli sarı/kırmızı yanıyor, makine "çok
+        // ısınıyor" gibi görünüyordu; oysa boştaki gerçek değer 45-55 °C.
+        // 85/95 sınırları gerçek bir sorunu (soğutucu tıkalı, fan durmuş)
+        // hâlâ yakalar, normal turbo sıçramalarını yakalamaz.
+        "warning-threshold": 85,
+        "critical-threshold": 95,
+
+        // 5 sn yerine 10 sn: yukarıdaki kıpırdaklık yüzünden daha sık okumak
+        // yalnızca panelde zıplayan bir sayı üretiyor, bilgi katmıyor.
+        "interval": 10,
         "format": "{icon} {temperatureC}°C",
         "format-icons": ["󰔏", "󰔐", "󰸁"],
         "tooltip-format": "CPU sıcaklığı {temperatureC}°C",
@@ -300,6 +432,19 @@
         "tooltip-format":  "{capacity}%  ·  {power:0.1f} W\nKalan: {time}\nSağlık: {health}%  ·  {cycles} döngü"
     },
 
+    // Sistem tepsisi — BİLEREK "modules-right" listesinde DEĞİL.
+    //
+    // Bu masaüstünde tepsiyi kullanan uygulama yok. Tek istisna Claude Desktop
+    // idi ve o da geçerli bir simge yayımlamıyor; waybar günlüğüne
+    //     Item 'Claude_status_icon_1': No icon name or pixmap given.
+    // yazıp yerine "eksik görsel" yer tutucusunu (üstü çizili daire) çiziyordu.
+    // Panelde sıcaklıkla pil arasında görünen o anlamsız işaret buydu;
+    // tıklandığında Claude Desktop penceresini açıyordu.
+    //
+    // Tepsiye ihtiyaç duyan bir uygulama kurarsanız (blueman-applet, nm-applet,
+    // Telegram, Steam ...) modül adını "modules-right" listesine geri yazmanız
+    // yeterli. Bozuk simge yayımlayan bir uygulamaya elle simge vermek de
+    // mümkündür:  "icons": { "Uygulama_Id": "simge-adi" }
     "tray": {
         "icon-size": 16,
         // Simgeler arası boşluk. 10 px'te tepside iki-üç simge varken kutu

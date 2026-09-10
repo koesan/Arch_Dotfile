@@ -4,9 +4,9 @@
 [](https://hyprland.org/)
 [![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-| ![Screenshot 1](/resimler/20250418_04h29m34s_grim.png?msec=1756589478626) | ![Screenshot 2](/resimler/20250418_04h29m47s_grim.png?msec=1756589478599) |
+| ![Masaüstü ve panel](/resimler/2026-09-10_08-21-48.png) | ![Alacritty terminal](/resimler/2026-09-10_08-22-14.png) |
 | --- | --- |
-| ![Screenshot 3](/resimler/20250418_04h30m10s_grim.png?msec=1756589478609) | ![Screenshot 4](/resimler/20250418_04h32m49s_grim.png?msec=1756589478551) |
+| ![Nemo dosya yöneticisi](/resimler/2026-09-10_08-22-42.png) | ![Rofi uygulama başlatıcı](/resimler/2026-09-10_08-23-16.png) |
 
 ---
 
@@ -67,7 +67,10 @@ oturumunu seçmeniz yeterli.
 
 ## 🎨 Tema
 
-Masaüstünün tamamı tek bir palet kullanır: **Catppuccin Mocha**.
+Masaüstünün tamamı tek bir palet kullanır: **Catppuccin Mocha**. Tek istisna
+terminaldir: Alacritty **Blood Moon** paletini kullanır (arka planı neredeyse
+siyah olduğu için `opacity = 0.9` ile duvar kağıdı gerçekten görünür — Mocha'nın
+daha açık arka planında aynı değer opak görünüyordu).
 
 | Bileşen | Nereden gelir |
 | --- | --- |
@@ -77,7 +80,7 @@ Masaüstünün tamamı tek bir palet kullanır: **Catppuccin Mocha**.
 | Mako (bildirimler) | `configs/mako/config` |
 | wlogout | `configs/wlogout/style.css` |
 | Hyprlock (kilit ekranı) | `configs/hypr/hyprlock.conf` |
-| Alacritty | `configs/alacritty/themes/catppuccin_mocha.toml` |
+| Alacritty | `configs/alacritty/themes/blood_moon.toml` (hafif saydam) |
 | GTK 3 / GTK 4 | Kurulum sırasında `catppuccin-gtk-theme-mocha` (AUR) |
 | Qt 5 / Qt 6 | Kurulum sırasında üretilen qt5ct/qt6ct renk şeması |
 | İmleç | Kurulum sırasında `catppuccin-cursors-mocha` (AUR) → **koyu (siyah) varyant** |
@@ -196,10 +199,24 @@ güncellediğinizde ayarlarınız kalır.
 ### Ekran görüntüsü
 | Kısayol | İşlev |
 | --- | --- |
-| `PRINT` | Bölge seç → swappy ile düzenle |
+| `PRINT` | Bölge seç → swappy ile düzenle → kaydet düğmesi `~/Resimler` |
 | `SUPER + PRINT` | Bölge seç (PRINT ile aynı) |
 | `SHIFT + PRINT` | Tam ekran → panoya + `~/Resimler` |
 | `ALT + PRINT` | Aktif pencere → panoya + `~/Resimler` |
+
+Üç kısayol da `~/.local/bin/screenshot` betiğini çağırır (kaynağı:
+`configs/bin/screenshot`). Görüntü **hem panoya kopyalanır hem dosyaya
+yazılır**, ardından dosya yolunu gösteren bir bildirim çıkar — kaydın nereye
+gittiğini aramak gerekmez. Dosya adı her modda aynı biçimdedir:
+`YYYY-AA-GG_SS-DD-ss.png`.
+
+**Bölge görüntüsünde kaydetme kararını swappy verir.** Görüntü önce swappy
+penceresinde açılır (ok, kutu, metin, bulanıklık çizebilirsiniz); araç
+çubuğundaki aşağı oklu düğme dosyayı yazar. O düğmenin nereye yazacağı
+`~/.config/swappy/config` içindeki `save_dir` satırıyla belirlenir ve kurulum
+betiği orayı gerçek "Resimler" dizininize göre doldurur
+(`setup_swappy`). Bu dosya olmadan swappy görüntüyü sessizce `~/Desktop`
+altına atar — ayrıntı için aşağıdaki sorun giderme başlığına bakın.
 
 ### Dizüstü / medya tuşları
 Hepsi **ekran kilitliyken de çalışır**; ses ve parlaklık tuşları basılı
@@ -223,7 +240,8 @@ Alacritty · Nemo
 ### Sistem
 PipeWire (+ WirePlumber, pavucontrol) · NetworkManager · BlueZ + Blueman ·
 XDG portalları (hyprland + gtk) · hyprpolkitagent · brightnessctl · playerctl ·
-cliphist + wl-clipboard · grim/slurp/swappy · upower + power-profiles-daemon ·
+cliphist + wl-clipboard · grim/slurp/swappy · libnotify · upower +
+power-profiles-daemon ·
 gvfs (çöp kutusu, USB/telefon) · nwg-look (GTK tema aracı) · btop · htop ·
 fastfetch · tree · xsensors (isteğe bağlı)
 
@@ -255,12 +273,46 @@ Noto Fonts (+ emoji) · MS Fonts
 | Bölge | İçerik |
 | --- | --- |
 | Sol | `wlr/taskbar` — açık her pencere bir simge (tıkla: geç, orta tık: kapat), yanında odaklı pencerenin başlığı |
-| Orta | Workspace numaraları. Sabit liste yok: yalnızca **dolu** olanlar çizilir, üç workspace kullanıyorsanız `1 2 3` görünür |
-| Sağ | gizlilik · **kahve (uyku engelle)** · ses · **mikrofon** · bluetooth · ağ · parlaklık · CPU · RAM · sıcaklık · tepsi · pil · **saat (en sağda)** |
+| Orta | Workspace numaraları — **tıklanabilir**. Sabit liste yok: yalnızca **dolu** olanlar çizilir, üç workspace kullanıyorsanız `1 2 3` görünür |
+| Sağ | gizlilik · **kahve (uyku engelle)** · ses · **mikrofon** · bluetooth · ağ · parlaklık · CPU · RAM · sıcaklık · pil · **saat (en sağda)** |
 
 Mikrofon modülü yalnızca durum gösterir (yüzde yok): açıkken 󰍬, kapalıyken
 kırmızı 󰍭. Tıklayınca açılıp kapanır, sağ tık `pavucontrol`'ün giriş sekmesini
 açar.
+
+**Sistem tepsisi panelde yok.** Bu masaüstünde tepsiyi kullanan bir uygulama
+yok; tek istisna geçerli bir simge yayımlamadığı için waybar'ın "eksik görsel"
+yer tutucusunu (üstü çizili daire) çizdiriyordu. Tepsiyi geri istiyorsanız
+`waybar/config` içindeki `"modules-right"` listesine `"tray"` satırını
+ekleyin — modülün tanımı dosyada duruyor.
+
+### Workspace göstergesi neden `custom/wsN` modülleri?
+
+Waybar'ın yerleşik `hyprland/workspaces` modülü bir numaraya tıklandığında
+Hyprland soketine **eski biçim** bir komut yazar: `dispatch workspace 2`.
+Hyprland 0.56'dan itibaren yapılandırma Lua biçimindeyse (bu depoda öyle)
+soketten gelen dispatch metni bir **Lua ifadesi** olarak yorumlanır ve
+`workspace 2` geçerli Lua olmadığı için tıklama sessizce hiçbir şey yapmaz.
+Kendiniz görebilirsiniz:
+
+```bash
+hyprctl dispatch workspace 1
+# error: [string "return hl.dispatch(workspace 1)"]:1: ')' expected
+
+hyprctl dispatch 'hl.dsp.focus({ workspace = 1 })'
+# ok
+```
+
+Modülün komutu dışarıdan değiştirmeye izin veren bir `on-click` seçeneği
+olmadığı için gösterge, workspace başına bir `custom/wsN` modülüne bölündü.
+Durumu da tıklamayı da `~/.local/bin/waybar-workspace` (kaynağı:
+`configs/bin/waybar-workspace`) karşılar; betik yeni Lua biçimini kullanır,
+bulamazsa eski biçime geri düşer.
+
+Göstergeler **saniyede bir yoklanmaz**: Hyprland tarafındaki
+`hypr/lua/waybar.lua`, workspace ve pencere olaylarında waybar'a `SIGRTMIN+9`
+gönderir, modüller yalnızca o an tazelenir. Sinyal numarasını değiştirirseniz
+iki dosyada da değiştirin.
 
 ---
 
@@ -334,6 +386,7 @@ animations = {
 │   │   ├── binds.lua         # kısayollar
 │   │   ├── rules.lua         # pencere ve katman kuralları
 │   │   ├── autostart.lua     # açılışta başlayan süreçler
+│   │   ├── waybar.lua        # panel göstergelerini olay bazlı tazeler (SIGRTMIN+9)
 │   │   ├── cursor.lua        # kurulum betiği üretir (imleç teması)
 │   │   ├── local.lua         # SİZİN makineye özel ayarlarınız (git'te yok)
 │   │   └── local.lua.example # başlangıç şablonu
@@ -342,10 +395,11 @@ animations = {
 │   ├── hyprpaper.conf        # duvar kağıdı
 │   └── wallpaper/
 ├── waybar/                   # panel
+├── swappy/                   # bölge görüntüsü düzenleyici (kayıt dizini)
 ├── rofi/                     # uygulama başlatıcı
 ├── mako/                     # bildirimler
 ├── wlogout/                  # oturum menüsü (+ icons-svg/)
-├── alacritty/                # terminal + tema koleksiyonu
+├── alacritty/                # terminal (Blood Moon) + tema koleksiyonu
 ├── wofi/                     # yedek başlatıcı
 ├── gtk-3.0/  gtk-4.0/        # kurulum betiği üretir
 ├── qt5ct/    qt6ct/          # kurulum betiği üretir
@@ -355,7 +409,10 @@ animations = {
 # `dconf load /org/nemo/ < configs/nemo/nemo-dconf.conf` ile uygulanır.
 
 ~/
-├── .local/bin/caffeine       # kahve (uyku engelleme) anahtarı — panel bunu çağırır
+├── .local/bin/
+│   ├── caffeine              # kahve (uyku engelleme) anahtarı — panel bunu çağırır
+│   ├── waybar-workspace      # panelin tıklanabilir workspace göstergesi
+│   └── screenshot            # PRINT kısayollarının çağırdığı görüntü betiği
 ├── .icons/     .themes/      # simge ve GTK temaları
 ├── .zshrc      .oh-my-zsh/
 └── .cache/arch-dotfile-install-<tarih>.log
@@ -396,6 +453,42 @@ Düzeltildi. Sebebi `style.css` içinde `window#waybar.empty #taskbar` kuralıyd
 "odaklı pencerenin BAŞLIĞI boş" demektir — "hiç pencere yok" demek değil.
 Başlıksız bir pencere odaklanınca görev çubuğu simgeleri yerinde kalıyor ama
 arka plan adası kayboluyordu. O kuralı geri eklemeyin.
+
+**swappy'de kaydet düğmesine bastım ama dosya hiçbir yerde yok**
+`~/.config/swappy/config` eksik ya da `save_dir` satırı yanlış demektir.
+swappy, ayar bulamazsa sırayla `$XDG_DESKTOP_DIR` → `$XDG_CONFIG_HOME/Desktop`
+→ `$HOME/Desktop` dener. Tuzak şu: **`XDG_DESKTOP_DIR` bir ortam değişkeni
+değildir** — masaüstünün yeri `~/.config/user-dirs.dirs` içinde durur ve oradan
+yalnızca `xdg-user-dir DESKTOP` okur, kabuğa export edilmez. Bu yüzden her
+zaman son basamak kazanır ve görüntü, masaüstüyle hiçbir ilgisi olmayan
+`~/Desktop` dizinine sessizce düşer. Türkçe oturumda gerçek masaüstü "Masaüstü"
+olduğu için dosya hiçbir yerde görünmez; hata da verilmez, çünkü swappy o
+dizini kendisi oluşturur.
+
+```bash
+ls ~/Desktop                 # eski kayıtlarınız buradaysa taşıyın:
+mv ~/Desktop/swappy-*.png "$(xdg-user-dir PICTURES)"/ && rmdir ~/Desktop
+grep save_dir ~/.config/swappy/config   # doğru dizini gösteriyor mu?
+```
+
+Düzeltmek için `./arch_dotfile_installer.sh` betiğini yeniden çalıştırmanız
+yeter (`setup_swappy` adımı satırı sizin "Resimler" dizininize göre yazar).
+
+**Panelde workspace numaralarına tıklayınca hiçbir şey olmuyor**
+Gösterge `~/.local/bin/waybar-workspace` betiğine dayanır; kurulu mu bakın:
+`ls -l ~/.local/bin/waybar-workspace`. Numaralar hiç görünmüyorsa `jq` eksik
+olabilir (`sudo pacman -S jq`) — betik o durumda sessizce boş çıktı verir.
+Nedeni yukarıdaki "Workspace göstergesi neden `custom/wsN` modülleri?"
+başlığında.
+
+**Panelde sıcaklık yanlış ya da sürekli kırmızı**
+Kurulum betiği sensörü `hwmon-path-abs` + `input-filename` çiftiyle yazar;
+düz `hwmon-path` kullanılmaz çünkü `hwmonN` numarası her açılışta değişip
+başka bir çipin (NVMe SSD, GPU) sıcaklığını CPU diye gösterebilir. Sensörü
+yeniden algılatmak için: `./arch_dotfile_installer.sh --check` ile durumu
+görün, sonra kurulumu tekrar çalıştırın. Uyarı/kritik eşikleri bilerek 85/95
+°C'dir: modern bir CPU'nun Tjmax değeri 100-105 °C'dir ve tek çekirdeğin
+anlık turbosu 80'i rahatça geçer.
 
 **Bir şeyi bozdum, geri almak istiyorum**
 Kurulum her dosyayı yedekliyor:
@@ -568,7 +661,7 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 Hyprland'i ve gerekli bazı paketleri yükleyin.
 
 ```bash
-sudo pacman -S hyprland hyprpaper grim slurp hyprpolkitagent xdg-desktop-portal-hyprland
+sudo pacman -S hyprland hyprpaper grim slurp swappy libnotify hyprpolkitagent xdg-desktop-portal-hyprland
 ```
 
 Ekran paylaşımı için gerekli paketleri yükleyin:

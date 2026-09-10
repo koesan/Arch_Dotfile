@@ -68,7 +68,6 @@ window#waybar.hidden {
 }
 
 /* Ortak modül kutusu. Her modül kendi yuvarlatılmış adasında durur. */
-#workspaces,
 #taskbar,
 #submap,
 #window,
@@ -97,42 +96,94 @@ window#waybar.hidden {
 }
 
 /* ── Workspace'ler ───────────────────────────────────────────────────────── */
-#workspaces {
-    padding: 0 3px;
+/* Gösterge artık tek bir `#workspaces` modülü DEĞİL, workspace başına bir
+   `custom/wsN` modülü (nedeni waybar/config içinde anlatılıyor: yerleşik
+   modülün tıklaması Hyprland'in Lua yapılandırmasında çalışmıyor).
+
+   Görüntü aynı kalsın diye ada (yuvarlak kutu) artık modüllerin ortak kabı
+   olan `.modules-center` üzerinde; sayılar o kabın içinde saydam düğmeler gibi
+   duruyor. Kabın KENDİ iç boşluğu yok: bütün workspace'ler gizlendiğinde geriye
+   boş ama görünür bir kutu kalmasın diye. Kenar boşluğunu sayıların `margin`i
+   sağlıyor. */
+.modules-center {
+    background-color: @mantle;
+    color: @text;
+    padding: 0;
+    margin: 0 2px;
+    border-radius: 10px;
+    border-top: 1px solid alpha(@surface0, 0.6);
 }
 
-#workspaces button {
-    color: @overlay0;
+#custom-ws1,
+#custom-ws2,
+#custom-ws3,
+#custom-ws4,
+#custom-ws5,
+#custom-ws6,
+#custom-ws7,
+#custom-ws8,
+#custom-ws9,
+#custom-ws10 {
     background: transparent;
+    color: @overlay0;
     padding: 0 9px;
-    margin: 4px 2px;
+    margin: 4px 3px;
     border-radius: 7px;
     /* Renk geçişi yumuşak olsun; GTK3 transition'ı destekler. */
     transition: background-color 150ms ease, color 150ms ease;
 }
 
-#workspaces button:hover {
+#custom-ws1:hover,
+#custom-ws2:hover,
+#custom-ws3:hover,
+#custom-ws4:hover,
+#custom-ws5:hover,
+#custom-ws6:hover,
+#custom-ws7:hover,
+#custom-ws8:hover,
+#custom-ws9:hover,
+#custom-ws10:hover {
     background-color: @surface0;
     color: @text;
 }
 
 /* Üzerinde pencere olan ama odaklı olmayan workspace. */
-#workspaces button.visible,
-#workspaces button.occupied {
+#custom-ws1.occupied,
+#custom-ws1.visible,
+#custom-ws2.occupied,
+#custom-ws2.visible,
+#custom-ws3.occupied,
+#custom-ws3.visible,
+#custom-ws4.occupied,
+#custom-ws4.visible,
+#custom-ws5.occupied,
+#custom-ws5.visible,
+#custom-ws6.occupied,
+#custom-ws6.visible,
+#custom-ws7.occupied,
+#custom-ws7.visible,
+#custom-ws8.occupied,
+#custom-ws8.visible,
+#custom-ws9.occupied,
+#custom-ws9.visible,
+#custom-ws10.occupied,
+#custom-ws10.visible {
     color: @subtext0;
 }
 
 /* Odaklı workspace — tek vurgu rengi, dolgu yerine belirgin metin. */
-#workspaces button.active {
+#custom-ws1.active,
+#custom-ws2.active,
+#custom-ws3.active,
+#custom-ws4.active,
+#custom-ws5.active,
+#custom-ws6.active,
+#custom-ws7.active,
+#custom-ws8.active,
+#custom-ws9.active,
+#custom-ws10.active {
     background-color: @surface0;
     color: @accent;
-    font-weight: 700;
-}
-
-/* Dikkat isteyen workspace (ör. arka planda açılan bir diyalog). */
-#workspaces button.urgent {
-    background-color: @critical;
-    color: @crust;
     font-weight: 700;
 }
 

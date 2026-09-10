@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════════════════
+#  waybar-workspace — tıklanabilir workspace göstergesi
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  NEDEN VAR: Waybar'ın yerleşik `hyprland/workspaces` modülü, bir numaraya
+#  tıklandığında Hyprland'in soketine ESKİ BİÇİM bir komut yazar:
+#
+#      dispatch workspace 2
+#
+#  Hyprland 0.56'dan itibaren, yapılandırma Lua biçimindeyse (bu depoda öyle:
+#  ~/.config/hypr/hyprland.lua) soketten gelen dispatch metni artık bir LUA
+#  İFADESİ olarak değerlendirilir; Hyprland komutu şuna sarar:
+#
+#      return hl.dispatch(workspace 2)
+#
+#  `workspace 2` geçerli Lua değildir → sözdizimi hatası → hiçbir şey olmaz.
+#  Doğrulaması:
+#
+#      hyprctl dispatch workspace 1
+#      → error: [string "return hl.dispatch(workspace 1)"]:1: ')' expected
+#
+#      hyprctl dispatch 'hl.dsp.focus({ workspace = 1 })'
+#      → ok
+#
+#  Waybar bu Lua söz dizimini bilmez ve `hyprland/workspaces` modülünde
+#  "on-click" seçeneği YOKTUR (bkz. man 5 waybar-hyprland-workspaces), yani
+#  komutu dışarıdan değiştiremeyiz. Bu yüzden gösterge, her workspace için bir
+#  `custom/wsN` modülüne bölündü: durumu bu betik üretir, tıklamayı da bu
+#  betik karşılar.
+#
+#  Kullanım:
+#    waybar-workspace 3          waybar için JSON (metin + CSS sınıfı)
+#    waybar-workspace focus 3    3 numaralı workspace'e geç (tıklama)
+#
+#  Çıktı boş bırakıldığında ("text" yok) waybar modülü hiç çizmez; gösterge
+#  böylece yalnızca DOLU workspace'leri (artı odaklı olanı) gösterir —
+#  yerleşik modülün persistent-workspaces'sız davranışının aynısı.
+# ═══════════════════════════════════════════════════════════════════════════
+set -uo pipefail
+
+# Hyprland ya da jq yoksa modül sessizce boş kalsın; panel yine açılır.
+command -v hyprctl >/dev/null 2>&1 || exit 0
+command -v jq      >/dev/null 2>&1 || exit 0
+
+# ── Tıklama ────────────────────────────────────────────────────────────────
+if [[ "${1:-}" == "focus" ]]; then
+    n=${2:-}
+    [[ "$n" =~ ^[0-9]+$ ]] || exit 1
+
+    # Önce Lua biçimi (Hyprland 0.56+ ve hyprland.lua kullanan kurulumlar).
+    # hyprctl hata durumunda da 0 döndürebildiği için çıkış KODUNA değil,
+    # yanıtın "ok" olmasına bakılıyor.
+    if [[ "$(hyprctl dispatch "hl.dsp.focus({ workspace = $n })" 2>&1)" == ok* ]]; then
+        exit 0
+    fi
+
+    # Eski hyprland.conf biçimini kullanan (ya da 0.56 öncesi) kurulumlar.
+    hyprctl dispatch workspace "$n" >/dev/null 2>&1
+    exit 0
+fi
+
+# ── Durum ──────────────────────────────────────────────────────────────────
+n=${1:-}
+[[ "$n" =~ ^[0-9]+$ ]] || exit 0
+
+workspaces=$(hyprctl -j workspaces 2>/dev/null) || exit 0
+monitors=$(hyprctl -j monitors   2>/dev/null) || exit 0
+[[ -n "$workspaces" && -n "$monitors" ]] || exit 0
+
+# active  → odaklı monitörün gösterdiği workspace
+# visible → herhangi bir monitörde görünen (çok monitörlü kurulum)
+# occupied→ üzerinde pencere olan
+jq -cn \
+   --argjson ws  "$workspaces" \
+   --argjson mon "$monitors" \
+   --argjson n   "$n" '
+    ( $mon | map(select(.focused)) | (.[0].activeWorkspace.id // -1) ) as $active
+  | ( $mon | map(.activeWorkspace.id) )                                as $visible
+  | ( $ws  | map(select(.id == $n)) | .[0] )                           as $w
+  | ( $w.windows // 0 )                                                as $count
+  | if   $n == $active        then "active"
+    elif ($visible | index($n)) then "visible"
+    elif $count > 0           then "occupied"
+    else "" end                                                        as $class
+  | if $class == "" then
+        {}
+    else
+        { text:    ($n | tostring),
+          class:   $class,
+          tooltip: ("Workspace \($n)  ·  \($count) pencere") }
+    end
+'

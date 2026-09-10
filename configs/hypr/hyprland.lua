@@ -13,6 +13,7 @@
      lua/binds.lua      Klavye ve fare kısayolları
      lua/rules.lua      Pencere ve katman kuralları
      lua/autostart.lua  Oturum açılışında başlayan süreçler
+     lua/waybar.lua     Panel göstergelerini olay bazlı tazeleyen köprü
 
    MAKİNEYE ÖZEL AYARLAR — lua/local.lua
    Ekran düzeni, klavye düzeni, NVIDIA seçenekleri gibi o bilgisayara özgü
@@ -56,3 +57,4 @@ require("lua.input")
 require("lua.binds")
 require("lua.rules")
 require("lua.autostart")
+require("lua.waybar")

@@ -1,0 +1,50 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  swappy — bölge ekran görüntüsü düzenleyicisi
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  NEDEN VAR: swappy'nin araç çubuğundaki kaydet düğmesi (aşağı ok — "indir"
+#  simgesi) görüntüyü `save_dir` ile belirtilen dizine yazar. Bu dosya YOKSA
+#  swappy şu sırayı izler (bkz. man 1 swappy):
+#
+#      $XDG_DESKTOP_DIR  →  $XDG_CONFIG_HOME/Desktop  →  $HOME/Desktop
+#
+#  Tuzak şu: XDG_DESKTOP_DIR bir ORTAM DEĞİŞKENİ değildir. Masaüstü dizininin
+#  yeri ~/.config/user-dirs.dirs içinde tanımlıdır ve oradan yalnızca
+#  `xdg-user-dir DESKTOP` komutu okur; kabuğa export EDİLMEZ. Dolayısıyla
+#  swappy her zaman son basamağa düşer ve görüntüyü İNGİLİZCE adlı, sistemde
+#  hiçbir yerde görünmeyen bir "$HOME/Desktop" dizinine sessizce kaydeder.
+#  Türkçe (ya da İngilizce dışındaki) bir oturumda gerçek masaüstü "Masaüstü"
+#  olduğu için dosya hiçbir yerde belirmez: düğmeye basılır, hiçbir şey
+#  olmamış gibi görünür. Hata da verilmez — swappy dizini kendisi oluşturur.
+#
+#  ÇÖZÜM: save_dir'i açıkça yazmak. Aşağıdaki değer kurulumda
+#  `xdg-user-dir PICTURES` çıktısıyla değiştirilir (installer → setup_swappy),
+#  böylece bölge görüntüleri de tam ekran/pencere görüntüleriyle AYNI dizine
+#  düşer.
+#
+#  Kaydedilen dosyanın yolu ayrıca bir bildirimle gösterilir; bunu swappy
+#  değil, betiği saran ~/.local/bin/screenshot yapar.
+# ═══════════════════════════════════════════════════════════════════════════
+[Default]
+save_dir=$HOME/Resimler
+save_filename_format=%Y-%m-%d_%H-%M-%S.png
+
+# Araç çubuğu her zaman görünsün — düğmeleri aramak gerekmesin.
+show_panel=true
+
+# Çizim varsayılanları. Renkler Catppuccin Mocha paletinden (waybar, rofi,
+# mako ve hyprlock ile aynı aile).
+line_size=5
+text_size=20
+text_font=JetBrainsMono Nerd Font
+paint_mode=brush
+custom_color=rgba(243,139,168,1)
+
+# early_exit: kaydettikten sonra pencere kendiliğinden kapansın mı. Kapalı —
+# aynı görüntüyü birden çok kez işaretleyip kaydedebilmek için.
+early_exit=false
+fill_shape=false
+
+# auto_save: pencere kapanırken sormadan kaydetsin mi. Kapalı; kaydetme
+# kararını düğme verir.
+auto_save=false
