@@ -149,6 +149,18 @@ güncellediğinizde ayarlarınız kalır.
 | `SUPER + C` | Pano geçmişi (cliphist) |
 | `SUPER + SHIFT + V` | Pano geçmişi (aynı komut, ikinci kısayol) |
 
+### Terminal (Alacritty içinde)
+| Kısayol | İşlev |
+| --- | --- |
+| `SHIFT + ENTER` | Göndermeden alt satıra geç (Claude Code, zsh; `ALT + ENTER` ile aynı) |
+| `F11` | Pencereyi büyüt / geri al |
+| `CTRL + SHIFT + U` | Ekrandaki bağlantıları işaretle, seçileni aç |
+
+> Alacritty varsayılan olarak `SHIFT + ENTER`'a düz `ENTER` ile aynı baytı
+> gönderir, bu yüzden istem alt satıra geçmek yerine gönderilirdi.
+> `configs/alacritty/alacritty.toml` bu tuşa `ALT + ENTER`'ın dizisini
+> (`ESC` + `\r`) bağlar.
+
 > **Pano geçmişi nasıl çalışır?**
 > Oturum açılışında `wl-paste --watch cliphist store` arka planda başlar
 > (bkz. `hypr/lua/autostart.lua`) ve kopyaladığınız her metni/görseli

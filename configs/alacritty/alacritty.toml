@@ -49,6 +49,19 @@ decorations_theme_variant = "None"
 key = "F11"
 action = "Togglemaximized"
 
+# SHIFT+ENTER: gönderme, alt satıra geç.
+#
+# Alacritty varsayılan olarak SHIFT+ENTER'a da düz ENTER'ın baytını (\r)
+# gönderir; uygulama ikisini ayırt edemez ve Claude Code gibi araçlarda
+# istem alt satıra geçmek yerine gönderilir. Burada SHIFT+ENTER'a ALT+ENTER
+# ile AYNI dizi (ESC + \r) veriliyor: Claude Code bunu "yeni satır" olarak
+# okur, zsh'de de ^[^M → self-insert-unmeta satırı çalıştırmadan buffer'a
+# yeni satır ekler. Düz ENTER eskisi gibi gönderir/çalıştırır.
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"
+
 
 
 
