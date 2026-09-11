@@ -72,6 +72,7 @@ window#waybar.hidden {
 #submap,
 #window,
 #clock,
+#custom-recording,
 #privacy,
 #custom-caffeine,
 #pulseaudio,
@@ -294,6 +295,16 @@ window#waybar.empty #window {
                  "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
 }
 #privacy       { color: @red; }
+
+/* Ekran kaydı: kayıt sürerken görünen tek modül. Kırmızı ZEMİN veriliyor,
+   yalnızca kırmızı yazı değil — kaydın açık kaldığını gözden kaçırmak
+   saatlerce süren, diski dolduran bir video demek. Yanıp sönme bilerek yok:
+   Hyprland animasyonları da kapalı (look.lua). */
+#custom-recording {
+    background-color: @red;
+    color: @crust;
+    font-weight: bold;
+}
 
 /* ── Durum sınıfları ─────────────────────────────────────────────────────── */
 /* Waybar `states` tanımlarına göre bu sınıfları otomatik ekler. */

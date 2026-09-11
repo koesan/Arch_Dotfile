@@ -1,0 +1,17 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  battery-notify.service — düşük pil kontrolünü BİR KEZ çalıştırır
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  Kendi başına etkinleştirilmez; battery-notify.timer dakikada bir tetikler.
+#  Betik: ~/.local/bin/battery-notify (kaynağı configs/bin/battery-notify)
+#
+#  Elle denemek için:   systemctl --user start battery-notify.service
+#  Günlük:              journalctl --user -u battery-notify.service
+# ═══════════════════════════════════════════════════════════════════════════
+
+[Unit]
+Description=Düşük pil bildirimi (Arch_Dotfile)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/battery-notify

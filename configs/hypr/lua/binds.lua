@@ -27,14 +27,24 @@ local apps = {
     logout       = "wlogout --protocol layer-shell",
     lock         = "hyprlock",
     monitor      = "alacritty -e btop",
+    -- Renk seçici: tıklanan pikselin hex kodu panoya kopyalanır (-a) ve
+    -- bildirimle gösterilir (-n). Paket kurulu değilse kısayol sessizce
+    -- hiçbir şey yapmasın diye ne kurulacağını söyleyen bir bildirim çıkar.
+    colorpicker  = "if command -v hyprpicker >/dev/null 2>&1; then hyprpicker -a -n; "
+                .. "else notify-send -a 'Renk seçici' 'hyprpicker kurulu değil' 'sudo pacman -S hyprpicker'; fi",
 }
 
--- Ekran görüntüsü betiği. Kısayollar komutu doğrudan çalıştırmaz; hepsi
--- ~/.local/bin/screenshot üzerinden geçer (bkz. configs/bin/screenshot):
--- hedef dizin, pano kopyası ve "kaydedildi" bildirimi orada tek yerde durur.
+-- Depodaki yardımcı betikler (configs/bin → ~/.local/bin). Kısayollar
+-- komutları doğrudan çalıştırmaz, bu betikler üzerinden geçer:
+--   screenshot   hedef dizin, pano kopyası ve "kaydedildi" bildirimi
+--   screenrecord kaydı başlat/durdur, panel göstergesi, kodlayıcı seçimi
+--   keybinds     bu dosyadaki `description` alanlarından kısayol listesi
 -- Tam yol veriliyor: Hyprland'in PATH'i her oturum yöneticisinde
 -- ~/.local/bin içermez.
-local shot = (os.getenv("HOME") or "~") .. "/.local/bin/screenshot"
+local bin      = (os.getenv("HOME") or "~") .. "/.local/bin/"
+local shot     = bin .. "screenshot"
+local record   = bin .. "screenrecord"
+local keybinds = bin .. "keybinds"
 
 -- ---------------------------------------------------------------------------
 -- Uygulamalar
@@ -53,6 +63,12 @@ hl.bind(mod .. " + PERIOD",        hl.dsp.exec_cmd(apps.emoji),        { descrip
 -- Not: SUPER+C eskiden kod editörünü açıyordu, o SUPER+SHIFT+C'ye taşındı.
 hl.bind(mod .. " + C",             hl.dsp.exec_cmd(apps.clipboard),    { description = "Pano geçmişi" })
 hl.bind(mod .. " + SHIFT + V",     hl.dsp.exec_cmd(apps.clipboard),    { description = "Pano geçmişi" })
+hl.bind(mod .. " + CTRL + C",      hl.dsp.exec_cmd(apps.colorpicker),  { description = "Renk seçici (hex → pano)" })
+
+-- Kısayol listesi. "K" = Kısayollar. Liste bu dosyadaki `description`
+-- alanlarından üretilir: yeni bir kısayol eklerken açıklamasını da yazın,
+-- yoksa listede "(açıklama yok)" diye görünür.
+hl.bind(mod .. " + K",             hl.dsp.exec_cmd(keybinds),          { description = "Kısayol listesi" })
 
 -- ---------------------------------------------------------------------------
 -- Oturum
@@ -90,56 +106,67 @@ end, { description = "Pencereler arasında geç" })
 -- Odak
 -- ---------------------------------------------------------------------------
 local directions = {
-    { key = "left",  vim = "H", dir = "left" },
-    { key = "right", vim = "L", dir = "right" },
-    { key = "up",    vim = "K", dir = "up" },
-    { key = "down",  vim = "J", dir = "down" },
+    { key = "left",  vim = "H", dir = "left",  tr = "sol" },
+    { key = "right", vim = "L", dir = "right", tr = "sağ" },
+    { key = "up",    vim = "K", dir = "up",    tr = "yukarı" },
+    { key = "down",  vim = "J", dir = "down",  tr = "aşağı" },
 }
 
 for _, d in ipairs(directions) do
     -- Odak taşı (ok tuşları)
-    hl.bind(mod .. " + " .. d.key, hl.dsp.focus({ direction = d.dir }))
+    hl.bind(mod .. " + " .. d.key, hl.dsp.focus({ direction = d.dir }),
+        { description = "Odağı taşı: " .. d.tr })
     -- Pencereyi taşı
-    hl.bind(mod .. " + SHIFT + " .. d.key, hl.dsp.window.move({ direction = d.dir }))
+    hl.bind(mod .. " + SHIFT + " .. d.key, hl.dsp.window.move({ direction = d.dir }),
+        { description = "Pencereyi taşı: " .. d.tr })
     -- Pencereyi başka monitöre taşı
-    hl.bind(mod .. " + ALT + " .. d.key, hl.dsp.window.move({ monitor = d.dir, follow = true }))
+    hl.bind(mod .. " + ALT + " .. d.key, hl.dsp.window.move({ monitor = d.dir, follow = true }),
+        { description = "Pencereyi diğer monitöre taşı: " .. d.tr })
 end
 
 -- Vim tuşlarıyla odak. SUPER+J zaten "bölme yönünü çevir" olduğu için
 -- vim yönleri yalnızca H/L/K ile ve SUPER+CTRL üzerinden verilmedi;
 -- çakışmayı önlemek adına odak için ayrı bir kombinasyon kullanılıyor.
-hl.bind(mod .. " + ALT + H", hl.dsp.focus({ direction = "left" }))
-hl.bind(mod .. " + ALT + L", hl.dsp.focus({ direction = "right" }))
-hl.bind(mod .. " + ALT + K", hl.dsp.focus({ direction = "up" }))
-hl.bind(mod .. " + ALT + J", hl.dsp.focus({ direction = "down" }))
+hl.bind(mod .. " + ALT + H", hl.dsp.focus({ direction = "left" }),  { description = "Odağı taşı: sol (vim)" })
+hl.bind(mod .. " + ALT + L", hl.dsp.focus({ direction = "right" }), { description = "Odağı taşı: sağ (vim)" })
+hl.bind(mod .. " + ALT + K", hl.dsp.focus({ direction = "up" }),    { description = "Odağı taşı: yukarı (vim)" })
+hl.bind(mod .. " + ALT + J", hl.dsp.focus({ direction = "down" }),  { description = "Odağı taşı: aşağı (vim)" })
 
 -- Yeniden boyutlandırma (basılı tutulabilir)
 local resize_step = 40
-hl.bind(mod .. " + CTRL + left",  hl.dsp.window.resize({ x = -resize_step, y = 0, relative = true }), { repeating = true })
-hl.bind(mod .. " + CTRL + right", hl.dsp.window.resize({ x =  resize_step, y = 0, relative = true }), { repeating = true })
-hl.bind(mod .. " + CTRL + up",    hl.dsp.window.resize({ x = 0, y = -resize_step, relative = true }), { repeating = true })
-hl.bind(mod .. " + CTRL + down",  hl.dsp.window.resize({ x = 0, y =  resize_step, relative = true }), { repeating = true })
+hl.bind(mod .. " + CTRL + left",  hl.dsp.window.resize({ x = -resize_step, y = 0, relative = true }),
+    { repeating = true, description = "Genişliği azalt" })
+hl.bind(mod .. " + CTRL + right", hl.dsp.window.resize({ x =  resize_step, y = 0, relative = true }),
+    { repeating = true, description = "Genişliği artır" })
+hl.bind(mod .. " + CTRL + up",    hl.dsp.window.resize({ x = 0, y = -resize_step, relative = true }),
+    { repeating = true, description = "Yüksekliği azalt" })
+hl.bind(mod .. " + CTRL + down",  hl.dsp.window.resize({ x = 0, y =  resize_step, relative = true }),
+    { repeating = true, description = "Yüksekliği artır" })
 
 -- ---------------------------------------------------------------------------
 -- Workspace'ler
 -- ---------------------------------------------------------------------------
 for i = 1, 10 do
     local key = i % 10  -- 10 → "0" tuşu
-    hl.bind(mod .. " + " .. key,         hl.dsp.focus({ workspace = i }))
-    hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i, follow = true }))
+    -- Açıklamada "workspace'e taşı" yazılmıyor: Türkçe ek sayıya göre değişir
+    -- (1'e, 2'ye, 6'ya, 9'a ...) ve yanlış ek listede göze batar.
+    hl.bind(mod .. " + " .. key,         hl.dsp.focus({ workspace = i }),
+        { description = "Workspace " .. i })
+    hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i, follow = true }),
+        { description = "Pencereyi taşı → workspace " .. i })
 end
 
 -- Fare tekerleği ile workspace değiştir
-hl.bind(mod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
+hl.bind(mod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }), { description = "Sonraki workspace" })
+hl.bind(mod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }), { description = "Önceki workspace" })
 
 -- Özel (scratchpad) workspace
 hl.bind(mod .. " + S",         hl.dsp.workspace.toggle_special("magic"), { description = "Scratchpad" })
 hl.bind(mod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }), { description = "Scratchpad'e taşı" })
 
 -- Fare ile taşı / boyutlandır
-hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
-hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true, description = "Pencereyi fareyle taşı" })
+hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true, description = "Pencereyi fareyle boyutlandır" })
 
 -- ---------------------------------------------------------------------------
 -- Ekran görüntüsü
@@ -158,6 +185,12 @@ hl.bind("PRINT",               hl.dsp.exec_cmd(shot_region), { description = "Ek
 hl.bind(mod .. " + PRINT",     hl.dsp.exec_cmd(shot_region), { description = "Ekran görüntüsü: bölge" })
 hl.bind("SHIFT + PRINT",       hl.dsp.exec_cmd(shot_full),   { description = "Ekran görüntüsü: tam ekran" })
 hl.bind("ALT + PRINT",         hl.dsp.exec_cmd(shot_window), { description = "Ekran görüntüsü: aktif pencere" })
+
+-- Ekran kaydı. Aynı tuş kaydı başlatır, kayıt sürerken DURDURUR; ikisinden
+-- hangisine basıldığı fark etmez. Kayıt sürerken panelde kırmızı 󰑊 REC
+-- görünür, ona tıklamak da durdurur. Dosya ~/Videolar altına düşer.
+hl.bind("CTRL + PRINT",         hl.dsp.exec_cmd(record .. " region"), { description = "Ekran kaydı: bölge (başlat/durdur)" })
+hl.bind("CTRL + SHIFT + PRINT", hl.dsp.exec_cmd(record .. " full"),   { description = "Ekran kaydı: tam ekran (başlat/durdur)" })
 
 -- ---------------------------------------------------------------------------
 -- Donanım tuşları
@@ -185,10 +218,10 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"
     { locked = true, repeating = true, description = "Parlaklığı azalt" })
 
 -- Medya (playerctl gerekir)
-hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
-hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
+hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true, description = "Oynat / duraklat" })
+hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true, description = "Oynat / duraklat" })
+hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true, description = "Sonraki parça" })
+hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true, description = "Önceki parça" })
 
 -- ---------------------------------------------------------------------------
 -- Sistem

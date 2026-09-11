@@ -132,7 +132,16 @@ güncellediğinizde ayarlarınız kalır.
 
 ## ⌨️ Kısayollar
 
-`SUPER` = Windows tuşu. Tam liste: `configs/hypr/lua/binds.lua`
+`SUPER` = Windows tuşu. Tam liste: `configs/hypr/lua/binds.lua` — ya da
+masaüstündeyken **`SUPER + K`**: tüm kısayollar aranabilir bir listede açılır.
+
+> **Kısayol listesi nasıl üretiliyor?** Ayrı, elle tutulan bir liste yok.
+> `binds.lua` içindeki her kısayolun `description` alanı Hyprland'e kayıtlıdır;
+> `~/.local/bin/keybinds` (kaynağı: `configs/bin/keybinds`) bunları
+> `hyprctl binds -j` ile okuyup rofi'de gösterir. Yeni bir kısayol eklerken
+> açıklamasını da yazın, yoksa listede "(açıklama yok)" görünür. Liste salt
+> okunurdur: Lua yapılandırmasında kısayollar Hyprland'e yalnızca bir numara
+> (`__lua`, `arg: "5"`) olarak göründüğü için seçilen satır çalıştırılamaz.
 
 ### Uygulamalar
 | Kısayol | İşlev |
@@ -148,6 +157,8 @@ güncellediğinizde ayarlarınız kalır.
 | `SUPER + PERIOD` | Emoji seçici |
 | `SUPER + C` | Pano geçmişi (cliphist) |
 | `SUPER + SHIFT + V` | Pano geçmişi (aynı komut, ikinci kısayol) |
+| `SUPER + CTRL + C` | Renk seçici — tıklanan pikselin hex kodu panoya (hyprpicker) |
+| `SUPER + K` | Kısayol listesi (aranabilir) |
 
 ### Terminal (Alacritty içinde)
 | Kısayol | İşlev |
@@ -230,6 +241,30 @@ betiği orayı gerçek "Resimler" dizininize göre doldurur
 (`setup_swappy`). Bu dosya olmadan swappy görüntüyü sessizce `~/Desktop`
 altına atar — ayrıntı için aşağıdaki sorun giderme başlığına bakın.
 
+### Ekran kaydı
+| Kısayol | İşlev |
+| --- | --- |
+| `CTRL + PRINT` | Bölge seç → kaydı başlat. Kayıt sürerken basınca **durdurur** |
+| `CTRL + SHIFT + PRINT` | Odaklı ekranın tamamını kaydet. Kayıt sürerken basınca **durdurur** |
+
+Kayıt sürerken panelin sağında kırmızı **󰑊 REC** göstergesi yanar; ona
+tıklamak da kaydı durdurur. Durunca dosya yolunu gösteren bir bildirim çıkar.
+Dosyalar `~/Videolar` altına `YYYY-AA-GG_SS-DD-ss.mp4` adıyla yazılır.
+Bilgisayardan çıkan ses kaydedilir, mikrofon kaydedilmez.
+
+- **Kayıt başlarken bildirim çıkmaz** — bilerek: bildirim videonun ilk
+  saniyelerine girerdi. Geri bildirim paneldeki göstergedir.
+- **İşlemciyi yormaz.** Betik (`~/.local/bin/screenrecord`, kaynağı
+  `configs/bin/screenrecord`) önce GPU'nun donanım kodlayıcısını (VAAPI) dener;
+  çalışmazsa yazılım kodlayıcıya (`libx264`) geçer, ses aygıtı açılamazsa
+  sessiz kaydeder. Hangisinin kullanıldığı `$XDG_RUNTIME_DIR/screenrecord.log`
+  dosyasında görünür.
+- **GPU numarayla seçilmez.** `/dev/dri/renderD128` her makinede aynı kart
+  değildir: AMD + NVIDIA bir dizüstünde renderD128 NVIDIA'ya aittir ve orada
+  VAAPI kodlaması yoktur. Betik kartı sürücü adına bakarak bulur.
+- Panelin `privacy` modülü bu kaydı **göremez**: wf-recorder ekranı
+  PipeWire'dan değil doğrudan Wayland'den alır. Ayrı gösterge bu yüzden var.
+
 ### Dizüstü / medya tuşları
 Hepsi **ekran kilitliyken de çalışır**; ses ve parlaklık tuşları basılı
 tutunca tekrar eder.
@@ -240,6 +275,23 @@ tutunca tekrar eder.
 | `Mikrofonu sustur` | `wpctl` ile varsayılan giriş |
 | `Parlaklık +/−` | `brightnessctl` (%5 adım, algısal eğri; en düşükte ekran tamamen kararmaz) |
 | `Oynat / duraklat / ileri / geri` | `playerctl` |
+
+### Düşük pil bildirimi
+Panelin pil modülü azalınca yalnızca rengini değiştirir; tam ekran video ya da
+sunum sırasında görünmez. Bu yüzden pil **%15'e** inince bir bildirim,
+**%5'e** inince kırmızı ve tıklanana kadar kalan **kritik** bildirim çıkar.
+Her eşikte yalnızca bir kez uyarılır; şarj cihazı takılınca sayaç sıfırlanır.
+
+Arka planda sürekli çalışan bir süreç yoktur: systemd kullanıcı zamanlayıcısı
+(`battery-notify.timer`) `~/.local/bin/battery-notify` betiğini dakikada bir
+çalıştırır, betik bir saniyeden kısa sürede çıkar. Kurulum betiği zamanlayıcıyı
+**yalnızca pili olan makinede** etkinleştirir; masaüstünde birim dosyaları
+kopyalanır ama çalışmaz. Fare/klavye pilleri sayılmaz.
+
+```bash
+systemctl --user list-timers battery-notify.timer   # çalışıyor mu?
+journalctl --user -u battery-notify.service         # günlük
+```
 
 ---
 
@@ -252,7 +304,8 @@ Alacritty · Nemo
 ### Sistem
 PipeWire (+ WirePlumber, pavucontrol) · NetworkManager · BlueZ + Blueman ·
 XDG portalları (hyprland + gtk) · hyprpolkitagent · brightnessctl · playerctl ·
-cliphist + wl-clipboard · grim/slurp/swappy · libnotify · upower +
+cliphist + wl-clipboard · grim/slurp/swappy · wf-recorder (ekran kaydı) ·
+hyprpicker (renk seçici) · libnotify · upower +
 power-profiles-daemon ·
 gvfs (çöp kutusu, USB/telefon) · nwg-look (GTK tema aracı) · btop · htop ·
 fastfetch · tree · xsensors (isteğe bağlı)
@@ -286,7 +339,7 @@ Noto Fonts (+ emoji) · MS Fonts
 | --- | --- |
 | Sol | `wlr/taskbar` — açık her pencere bir simge (tıkla: geç, orta tık: kapat), yanında odaklı pencerenin başlığı |
 | Orta | Workspace numaraları — **tıklanabilir**. Sabit liste yok: yalnızca **dolu** olanlar çizilir, üç workspace kullanıyorsanız `1 2 3` görünür |
-| Sağ | gizlilik · **kahve (uyku engelle)** · ses · **mikrofon** · bluetooth · ağ · parlaklık · CPU · RAM · sıcaklık · pil · **saat (en sağda)** |
+| Sağ | **󰑊 REC (yalnızca ekran kaydı sürerken)** · gizlilik · **kahve (uyku engelle)** · ses · **mikrofon** · bluetooth · ağ · parlaklık · CPU · RAM · sıcaklık · pil · **saat (en sağda)** |
 
 Mikrofon modülü yalnızca durum gösterir (yüzde yok): açıkken 󰍬, kapalıyken
 kırmızı 󰍭. Tıklayınca açılıp kapanır, sağ tık `pavucontrol`'ün giriş sekmesini
@@ -413,6 +466,7 @@ animations = {
 ├── wlogout/                  # oturum menüsü (+ icons-svg/)
 ├── alacritty/                # terminal (Blood Moon) + tema koleksiyonu
 ├── wofi/                     # yedek başlatıcı
+├── systemd/user/             # battery-notify.timer + .service (düşük pil)
 ├── gtk-3.0/  gtk-4.0/        # kurulum betiği üretir
 ├── qt5ct/    qt6ct/          # kurulum betiği üretir
 └── arch-dotfile-backup/      # üzerine yazılan dosyaların yedekleri
@@ -424,7 +478,10 @@ animations = {
 ├── .local/bin/
 │   ├── caffeine              # kahve (uyku engelleme) anahtarı — panel bunu çağırır
 │   ├── waybar-workspace      # panelin tıklanabilir workspace göstergesi
-│   └── screenshot            # PRINT kısayollarının çağırdığı görüntü betiği
+│   ├── screenshot            # PRINT kısayollarının çağırdığı görüntü betiği
+│   ├── screenrecord          # CTRL+PRINT ekran kaydı + panel REC göstergesi
+│   ├── keybinds              # SUPER+K kısayol listesi
+│   └── battery-notify        # düşük pil bildirimi (systemd zamanlayıcısı çağırır)
 ├── .icons/     .themes/      # simge ve GTK temaları
 ├── .zshrc      .oh-my-zsh/
 └── .cache/arch-dotfile-install-<tarih>.log

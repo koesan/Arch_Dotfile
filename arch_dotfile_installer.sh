@@ -200,8 +200,10 @@ declare -a PKG_CORE=(
 
     # Ekran görüntüsü ve pano (hypr/lua/binds.lua → bin/screenshot)
     grim slurp swappy
-    wl-clipboard cliphist jq      # jq: aktif pencere görüntüsü için
+    wl-clipboard cliphist jq      # jq: aktif pencere görüntüsü, kısayol listesi
     libnotify                     # notify-send: "kaydedildi" bildirimi
+    wf-recorder                   # ekran kaydı (CTRL+PRINT → bin/screenrecord)
+    hyprpicker                    # renk seçici (SUPER+CTRL+C)
 
     # X11 uyumluluğu
     xorg-xwayland xorg-xhost
@@ -829,6 +831,15 @@ setup_dotfiles() {
     deploy_file "$REPO_DIR/configs/bin/screenshot" "$HOME/.local/bin/screenshot"
     run chmod +x "$HOME/.local/bin/screenshot"
 
+    # Ekran kaydı (CTRL+PRINT), kısayol listesi (SUPER+K) ve düşük pil
+    # bildirimi. Pil betiğini systemd zamanlayıcısı çalıştırır; zamanlayıcı
+    # setup_battery_notify içinde, yalnızca pili olan makinede açılır.
+    local script
+    for script in screenrecord keybinds battery-notify; do
+        deploy_file "$REPO_DIR/configs/bin/$script" "$HOME/.local/bin/$script"
+        run chmod +x "$HOME/.local/bin/$script"
+    done
+
     # Ev dizinine gidenler — BİRLEŞTİRİLİR, silinmez: bu dizinlerde başka
     # kaynaklardan gelmiş temalar olabilir (nwg-look, AUR paketleri).
     merge_dir "$REPO_DIR/configs/.icons"  "$HOME/.icons"
@@ -1398,6 +1409,45 @@ setup_swappy() {
     success "  swappy save_dir → ${pics/#$HOME/\~}"
 }
 
+#  Düşük pil bildirimi — systemd KULLANICI zamanlayıcısı.
+#
+#  Birim dosyaları her makinede kopyalanır ama zamanlayıcı YALNIZCA sistem
+#  pili olan makinede etkinleştirilir: masaüstünde dakikada bir boşa çalışan
+#  bir birim olmasın. Fare/klavye pilleri ("scope" = Device) sayılmaz.
+has_system_battery() {
+    local dev
+    for dev in /sys/class/power_supply/*; do
+        [[ "$(cat "$dev/type" 2>/dev/null)" == Battery ]] || continue
+        [[ "$(cat "$dev/scope" 2>/dev/null)" == Device ]] && continue
+        return 0
+    done
+    return 1
+}
+
+setup_battery_notify() {
+    step "Düşük pil bildirimi"
+    local unit_dir="$HOME/.config/systemd/user"
+    deploy_file "$REPO_DIR/configs/systemd/battery-notify.service" "$unit_dir/battery-notify.service"
+    deploy_file "$REPO_DIR/configs/systemd/battery-notify.timer"   "$unit_dir/battery-notify.timer"
+
+    if ! has_system_battery; then
+        info "Bu makinede pil yok — zamanlayıcı etkinleştirilmedi"
+        return 0
+    fi
+
+    $DRY_RUN && { printf '%s  [kuru] systemctl --user enable --now battery-notify.timer%s\n' "$YELLOW" "$NC"; return 0; }
+
+    # Kurulum TTY'den ya da chroot'tan çalışıyorsa kullanıcı yöneticisine
+    # bağlanılamayabilir; o durumda kurulum durmaz, elle açma komutu yazılır.
+    systemctl --user daemon-reload 2>/dev/null
+    if systemctl --user enable --now battery-notify.timer 2>/dev/null; then
+        success "  battery-notify.timer etkin (%15 ve %5'te bildirim)"
+    else
+        warning "battery-notify.timer şu an etkinleştirilemedi"
+        note "Oturum açtıktan sonra: systemctl --user enable --now battery-notify.timer"
+    fi
+}
+
 setup_xhost() {
     # Root olarak açılan grafik uygulamaların XWayland'e erişebilmesi için.
     # Satır zaten varsa TEKRAR EKLENMEZ — eski sürüm her çalıştırmada
@@ -1450,7 +1500,8 @@ run_checks() {
         "jq:pencere görüntüsü" "brightnessctl:parlaklık" "playerctl:medya tuşları" \
         "wpctl:ses kontrolü" "pavucontrol:ses ayarları" "blueman-manager:bluetooth" \
         "nwg-look:GTK tema aracı" "zsh:kabuk" "btop:sistem izleyici" \
-        "xdg-user-dir:kullanıcı dizinleri" "notify-send:bildirim gönderme"
+        "xdg-user-dir:kullanıcı dizinleri" "notify-send:bildirim gönderme" \
+        "wf-recorder:ekran kaydı" "hyprpicker:renk seçici"
     do
         check_cmd "${pair%%:*}" "${pair#*:}" || ((fails++))
     done
@@ -1476,6 +1527,9 @@ run_checks() {
         "$HOME/.local/bin/caffeine:kahve (uyku engelleme) düğmesi" \
         "$HOME/.local/bin/waybar-workspace:workspace göstergesi" \
         "$HOME/.local/bin/screenshot:ekran görüntüsü betiği" \
+        "$HOME/.local/bin/screenrecord:ekran kaydı betiği" \
+        "$HOME/.local/bin/keybinds:kısayol listesi" \
+        "$HOME/.local/bin/battery-notify:düşük pil bildirimi" \
         "$HOME/.config/swappy/config:görüntü düzenleyici (kayıt dizini)" \
         "$HOME/.zshrc:zsh yapılandırması"
     do
@@ -1506,6 +1560,15 @@ run_checks() {
             ((fails++))
         fi
     done
+    # Pil zamanlayıcısı yalnızca pili olan makinede beklenir (setup_battery_notify).
+    if has_system_battery; then
+        if systemctl --user is-enabled --quiet battery-notify.timer 2>/dev/null; then
+            printf '  %s✓%s battery-notify.timer (kullanıcı)\n' "$GREEN" "$NC"
+        else
+            printf '  %s✗%s battery-notify.timer etkin değil — düşük pil bildirimi gelmez\n' "$RED" "$NC"
+            ((fails++))
+        fi
+    fi
 
     step "Hyprland yapılandırması"
     if [[ -f "$HOME/.config/hypr/hyprland.conf" ]]; then
@@ -1563,6 +1626,7 @@ $(printf '%s%sTemel kısayollar:%s\n' "$BOLD" "$CYAN" "$NC")
   SUPER + Q          pencereyi kapat       SUPER + ESCAPE     oturum menüsü
   SUPER + L          ekranı kilitle        SUPER + C          pano geçmişi
   PRINT              ekran görüntüsü       SUPER + 1..0       workspace
+  CTRL + PRINT       ekran kaydı           SUPER + K          tüm kısayollar
 
 $(printf '%s%sDosya konumları:%s\n' "$BOLD" "$CYAN" "$NC")
   Yapılandırmalar    ~/.config/
@@ -1654,6 +1718,7 @@ main() {
     setup_zsh
     setup_user_dirs
     setup_swappy
+    setup_battery_notify
     setup_xhost
     setup_python
     setup_nemo

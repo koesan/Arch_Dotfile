@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════════════════
+#  battery-notify — düşük pil bildirimi
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  NEDEN VAR: Paneldeki pil modülü azalınca yalnızca RENGİNİ değiştiriyor.
+#  Tam ekran video, oyun ya da sunum sırasında panel görünmediği için pil
+#  uyarısız bitiyor ve oturum aniden kapanıyordu.
+#
+#  NASIL ÇALIŞIR: Arka planda sürekli çalışan bir süreç YOK. systemd kullanıcı
+#  zamanlayıcısı (configs/systemd/battery-notify.timer) bu betiği dakikada bir
+#  çalıştırır; betik pili okuyup bir saniyeden kısa sürede çıkar.
+#
+#    %15 ve altı → normal bildirim (5 sn sonra kaybolur)
+#    %5  ve altı → KRİTİK bildirim (mako'da kırmızı, tıklanana kadar kalır)
+#
+#  Her eşik için yalnızca BİR KEZ uyarılır; durum $XDG_RUNTIME_DIR içinde
+#  tutulur. Şarj cihazı takılınca durum sıfırlanır, yani fiş çekilip pil yine
+#  azalırsa uyarı yeniden gelir.
+#
+#  Pili olmayan makinede (masaüstü) hiçbir şey yapmadan çıkar. Fare, klavye,
+#  kulaklık gibi aygıtların pilleri ("scope" = Device) sayılmaz.
+#
+#  Test için (gerçek pile dokunmadan):
+#    BATTERY_SYSFS=/sahte/power_supply battery-notify
+#    BATTERY_LOW=... BATTERY_CRITICAL=...  eşikleri değiştirir
+# ═══════════════════════════════════════════════════════════════════════════
+set -uo pipefail
+
+LOW=${BATTERY_LOW:-15}
+CRITICAL=${BATTERY_CRITICAL:-5}
+SYSFS=${BATTERY_SYSFS:-/sys/class/power_supply}
+
+RUNTIME="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+STATE="$RUNTIME/battery-notify.level"
+
+read_val() { cat "$1" 2>/dev/null; }
+
+found=false has_mains=false mains_online=false discharging=false
+e_now=0 e_full=0 power=0 cap_sum=0 cap_n=0
+
+for dev in "$SYSFS"/*; do
+    type=$(read_val "$dev/type") || continue
+    case "$type" in
+        Mains|USB)
+            has_mains=true
+            [[ "$(read_val "$dev/online")" == 1 ]] && mains_online=true
+            ;;
+        Battery)
+            [[ "$(read_val "$dev/scope")" == Device ]] && continue
+            found=true
+            [[ "$(read_val "$dev/status")" == Discharging ]] && discharging=true
+
+            # Birden fazla pil varsa yüzdeyi enerji toplamından hesapla;
+            # sürücü enerji vermiyorsa (bazıları charge_* verir) yüzdelerin
+            # ortalamasına düş.
+            now=$(read_val "$dev/energy_now" || read_val "$dev/charge_now")
+            full=$(read_val "$dev/energy_full" || read_val "$dev/charge_full")
+            if [[ "$now" =~ ^[0-9]+$ && "$full" =~ ^[0-9]+$ ]] && (( full > 0 )); then
+                (( e_now += now, e_full += full ))
+            fi
+            p=$(read_val "$dev/power_now" || read_val "$dev/current_now")
+            [[ "$p" =~ ^[0-9]+$ ]] && (( power += p ))
+            c=$(read_val "$dev/capacity")
+            [[ "$c" =~ ^[0-9]+$ ]] && (( cap_sum += c, cap_n++ ))
+            ;;
+    esac
+done
+
+$found || exit 0
+
+# Fişte miyiz? Önce şarj cihazının kendi bilgisine bakılır. Pil durumuna
+# güvenmek yetmez: iki pilli dizüstülerde biri boşalırken diğeri
+# "Not charging" der, şarj eşiğindeki pil de fişteyken "Not charging" der.
+# Şarj cihazı hiç görünmüyorsa (bazı sürücüler) pil durumuna düşülür.
+if $has_mains; then
+    on_ac=$mains_online
+elif $discharging; then
+    on_ac=false
+else
+    on_ac=true
+fi
+
+if $on_ac; then
+    rm -f "$STATE"
+    exit 0
+fi
+
+if (( e_full > 0 )); then
+    pct=$(( e_now * 100 / e_full ))
+elif (( cap_n > 0 )); then
+    pct=$(( cap_sum / cap_n ))
+else
+    exit 0
+fi
+
+# Kalan süre: enerji / anlık güç (ikisi de aynı birimde: µWh/µW ya da µAh/µA).
+remaining=""
+if (( power > 0 && e_now > 0 )); then
+    mins=$(( e_now * 60 / power ))
+    if (( mins >= 60 )); then
+        remaining="Kalan: yaklaşık $(( mins / 60 )) sa $(( mins % 60 )) dk"
+    else
+        remaining="Kalan: yaklaşık $mins dk"
+    fi
+fi
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 || return 0
+    notify-send -a "Pil" -u "$1" -i "$2" "$3" "$4"
+}
+
+last=$(read_val "$STATE")
+
+if (( pct <= CRITICAL )); then
+    if [[ "$last" != critical ]]; then
+        notify critical battery-empty "Pil kritik: %$pct" \
+            "Hemen şarj cihazını takın — makine birazdan kapanabilir.${remaining:+$'\n'$remaining}"
+        echo critical > "$STATE"
+    fi
+elif (( pct <= LOW )); then
+    if [[ "$last" != low && "$last" != critical ]]; then
+        notify normal battery-caution "Pil azalıyor: %$pct" \
+            "Şarj cihazını takın.${remaining:+$'\n'$remaining}"
+        echo low > "$STATE"
+    fi
+else
+    rm -f "$STATE"
+fi
+exit 0

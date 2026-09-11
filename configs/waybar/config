@@ -36,6 +36,7 @@
     // biçiminde çalışmıyor.
     "modules-center": ["custom/ws1", "custom/ws2", "custom/ws3", "custom/ws4", "custom/ws5", "custom/ws6", "custom/ws7", "custom/ws8", "custom/ws9", "custom/ws10"],
     "modules-right":  [
+        "custom/recording",
         "privacy",
         "custom/caffeine",
         "pulseaudio",
@@ -239,6 +240,26 @@
             { "type": "screenshare", "tooltip": true, "tooltip-icon-size": 20 },
             { "type": "audio-in",    "tooltip": true, "tooltip-icon-size": 20 }
         ]
+    },
+
+    // Ekran kaydı göstergesi — YALNIZCA kayıt sürerken görünür.
+    //
+    // Neden "privacy" modülü yetmiyor: o modül PipeWire üzerinden yapılan
+    // ekran paylaşımını görür. wf-recorder ise ekranı doğrudan Wayland'in
+    // screencopy protokolüyle alır, PipeWire'a hiç uğramaz; privacy kayıt
+    // sırasında hiçbir şey göstermiyordu.
+    //
+    // Kayıt yokken betik boş çıktı verir ve waybar modülü hiç çizmez.
+    // Yoklama yok: betik başlat/durdur anında SIGRTMIN+10 gönderir; sinyal
+    // numarası configs/bin/screenrecord içindeki SIGNAL ile aynı olmalı.
+    // Tıklamak kaydı durdurur (CTRL+PRINT ile aynı iş).
+    "custom/recording": {
+        "exec":        "$HOME/.local/bin/screenrecord status",
+        "return-type": "json",
+        "interval":    "once",
+        "signal":      10,
+        "format":      "{}",
+        "on-click":    "$HOME/.local/bin/screenrecord stop"
     },
 
     // Kahve düğmesi — açıkken ekran kararmaz, kilitlenmez, uyumaz.

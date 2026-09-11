@@ -14,7 +14,8 @@
    waybar'a SIGRTMIN+9 gönderiliyor, modüller yalnızca o an çalışıyor.
 
    SİNYAL NUMARASI, waybar/config'teki `"signal": 9` ile AYNI olmalıdır.
-   (Kahve düğmesi SIGRTMIN+8 kullanıyor — çakışmasın.)
+   (Kahve düğmesi SIGRTMIN+8, ekran kaydı göstergesi SIGRTMIN+10
+   kullanıyor — çakışmasın.)
   ═══════════════════════════════════════════════════════════════════════════
 --]]
 

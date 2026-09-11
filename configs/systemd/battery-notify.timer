@@ -1,0 +1,27 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  battery-notify.timer — pili dakikada bir kontrol eder
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  NEDEN ZAMANLAYICI: Sürekli çalışan bir `while sleep` döngüsü bellekte
+#  kalıcı bir süreç demek. Zamanlayıcıda arada hiçbir süreç yok; betik
+#  çalışıp bir saniyeden kısa sürede çıkıyor.
+#
+#  NEDEN DAKİKADA BİR: Yoğun yükte pil dakikada ~%1 düşebiliyor. İki dakikalık
+#  aralıkta %5 eşiği %3'te fark edilebilirdi; bir dakika payı daraltıyor.
+#
+#  Kurulum betiği bu zamanlayıcıyı YALNIZCA pili olan makinede etkinleştirir
+#  (setup_battery_notify).
+#      systemctl --user enable --now battery-notify.timer
+#      systemctl --user list-timers battery-notify.timer
+# ═══════════════════════════════════════════════════════════════════════════
+
+[Unit]
+Description=Pil seviyesini dakikada bir kontrol et (Arch_Dotfile)
+
+[Timer]
+OnStartupSec=1min
+OnUnitActiveSec=1min
+AccuracySec=15s
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,208 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════════════════
+#  screenrecord — ekran kaydı başlat/durdur (wf-recorder)
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  NEDEN VAR: wf-recorder tek başına bir terminal komutu; kaydı durdurmak için
+#  onu başlatan terminale dönüp CTRL+C basmak gerekiyor. Bu betik aynı
+#  kısayolu "başlat / durdur" anahtarına çeviriyor, kayıt sürerken panelde
+#  kırmızı bir gösterge yakıyor ve kayıt bitince dosya yolunu bildiriyor.
+#
+#  Kullanım:
+#    screenrecord region    bölge seç → kaydet; kayıt sürüyorsa DURDURUR (CTRL+PRINT)
+#    screenrecord full      odaklı ekranı kaydet; kayıt sürüyorsa DURDURUR (CTRL+SHIFT+PRINT)
+#    screenrecord stop      kaydı durdur (panel göstergesine tıklama)
+#    screenrecord status    waybar için JSON; kayıt yoksa boş çıktı → modül gizlenir
+#
+#  Kayıt başlarken BİLİNÇLİ OLARAK bildirim gösterilmiyor: bildirim ilk
+#  saniyelerde videonun içine girerdi. Geri bildirim paneldeki 󰑊 göstergesi.
+#
+#  KODLAYICI SEÇİMİ — sırayla denenir, ilk ÇALIŞAN kullanılır:
+#    1) h264_vaapi  GPU'nun donanım kodlayıcısı; işlemciyi neredeyse hiç
+#                   yormaz. Yalnızca amdgpu / i915 / xe / radeon sürücülü
+#                   kartlarda denenir.
+#    2) libx264     yazılım kodlayıcı; her makinede çalışır, işlemci kullanır.
+#    3) libx264, SESSİZ  ses aygıtı açılamazsa son çare.
+#
+#  DİKKAT — render düğümü NUMARAYLA SEÇİLMİYOR. /dev/dri/renderD128 her
+#  makinede aynı kart değil: bu depoyu geliştiren AMD+NVIDIA dizüstünde
+#  renderD128 NVIDIA'ya ait ve orada VAAPI kodlaması hiç yok
+#      Failed to create hw encoding device /dev/dri/renderD128: Input/output error
+#  AMD kartı renderD129. Düğüm bu yüzden sürücü adına bakılarak bulunuyor.
+#  (NVIDIA'nın VAAPI sürücüsü, nvidia-vaapi-driver, yalnızca çözme yapar.)
+#
+#  Ses: varsayılan ÇIKIŞ aygıtının "monitor"u, yani bilgisayardan çıkan ses
+#  kaydedilir; mikrofon kaydedilmez.
+#
+#  Bağımlılıklar: wf-recorder, slurp (region), hyprctl + jq (full),
+#                 pactl (ses, isteğe bağlı), notify-send
+# ═══════════════════════════════════════════════════════════════════════════
+set -uo pipefail
+
+RUNTIME="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+PIDFILE="$RUNTIME/screenrecord.pid"
+FILEREC="$RUNTIME/screenrecord.file"
+LOG="$RUNTIME/screenrecord.log"
+
+# Waybar config'indeki custom/recording → "signal": 10 ile aynı olmalı.
+# (8 = kahve, 9 = workspace göstergesi.)
+SIGNAL=10
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 || return 0
+    notify-send -a "Ekran kaydı" -i "${3:-video-x-generic}" "$1" "${2:-}"
+}
+
+die() {
+    printf 'screenrecord: %s\n' "$1" >&2
+    notify "Ekran kaydı başlatılamadı" "$1" dialog-error
+    exit 1
+}
+
+refresh_bar() { pkill -RTMIN+"$SIGNAL" waybar 2>/dev/null || true; }
+
+# Kayıt süren wf-recorder'ın PID'ini yazar. PID geri dönüşebildiği için
+# sürecin adı da doğrulanır (caffeine betiğiyle aynı yöntem).
+recording_pid() {
+    [[ -f "$PIDFILE" ]] || return 1
+    local pid
+    pid=$(cat "$PIDFILE" 2>/dev/null)
+    [[ -n "$pid" && "$(ps -o comm= -p "$pid" 2>/dev/null)" == "wf-recorder" ]] || return 1
+    printf '%s' "$pid"
+}
+
+video_dir() {
+    local dir
+    dir=$(xdg-user-dir VIDEOS 2>/dev/null)
+    # xdg-user-dir, dizin tanımlı değilse ev dizinini döndürür; videolar
+    # ~ altına saçılmasın.
+    [[ -n "$dir" && "$dir" != "$HOME" ]] || dir="$HOME/Videolar"
+    printf '%s' "$dir"
+}
+
+# VAAPI kodlaması yapabilen ilk render düğümü (bkz. başlıktaki DİKKAT notu).
+vaapi_device() {
+    local node drv
+    for node in /dev/dri/renderD*; do
+        [[ -e "$node" ]] || continue
+        drv=$(readlink -f "/sys/class/drm/${node##*/}/device/driver" 2>/dev/null)
+        case "${drv##*/}" in
+            amdgpu|radeon|i915|xe) printf '%s' "$node"; return 0 ;;
+        esac
+    done
+    return 1
+}
+
+# wf-recorder'ı arka planda başlatır; 1.5 sn sonra hâlâ yaşıyorsa kodlayıcı
+# çalışıyor demektir. Kodlayıcı açılamazsa wf-recorder ilk saniyede çıkar.
+#
+# `setsid` + çocuğun kendi PID'ini yazması: caffeine betiğindeki gerekçeyle
+# aynı — `$!` setsid'in çatallanmasına göre yanlış PID verebilir, `exec`
+# sayesinde yazılan PID doğrudan wf-recorder'ın PID'idir.
+launch() {
+    rm -f "$file" "$PIDFILE"
+    setsid sh -c 'echo $$ > "$1"; shift; exec wf-recorder "$@"' \
+        _ "$PIDFILE" -y -f "$file" "${target[@]}" "$@" >"$LOG" 2>&1 </dev/null &
+    sleep 1.5
+    recording_pid >/dev/null
+}
+
+start() {
+    local mode="$1"
+    command -v wf-recorder >/dev/null 2>&1 || die "wf-recorder kurulu değil (sudo pacman -S wf-recorder)"
+
+    target=()
+    case "$mode" in
+        region)
+            command -v slurp >/dev/null 2>&1 || die "slurp kurulu değil"
+            local geom
+            geom=$(slurp -d 2>/dev/null) || exit 0   # ESC ile iptal: sessizce çık
+            [[ -n "$geom" ]] || exit 0
+            target=(-g "$geom")
+            ;;
+        full)
+            # Birden çok ekranda -o verilmezse wf-recorder terminalden ekran
+            # numarası SORAR ve kısayoldan başlatıldığında sonsuza dek bekler.
+            local output=""
+            if command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+                output=$(hyprctl monitors -j 2>/dev/null | jq -r '.[] | select(.focused) | .name' 2>/dev/null)
+            fi
+            [[ -n "$output" ]] && target=(-o "$output")
+            ;;
+    esac
+
+    local dir
+    dir=$(video_dir)
+    mkdir -p "$dir" || die "dizin oluşturulamadı: $dir"
+    file="$dir/$(date +%Y-%m-%d_%H-%M-%S).mp4"
+
+    local audio=() sink="" dev=""
+    if command -v pactl >/dev/null 2>&1; then
+        sink=$(pactl get-default-sink 2>/dev/null)
+        [[ -n "$sink" ]] && audio=(--audio="$sink.monitor")
+    fi
+
+    if dev=$(vaapi_device) && launch -c h264_vaapi -d "$dev" "${audio[@]}"; then
+        :
+    elif launch -c libx264 -p preset=veryfast -p crf=23 "${audio[@]}"; then
+        :
+    elif (( ${#audio[@]} > 0 )) && launch -c libx264 -p preset=veryfast -p crf=23; then
+        notify "Kayıt SESSİZ başladı" "Ses aygıtı açılamadı: $sink.monitor" audio-volume-muted
+    else
+        rm -f "$file" "$PIDFILE"
+        die "wf-recorder çalışmadı — ayrıntı: ${LOG/#$HOME/\~}"
+    fi
+
+    printf '%s\n' "$file" > "$FILEREC"
+    refresh_bar
+}
+
+stop() {
+    local pid file=""
+    [[ -f "$FILEREC" ]] && file=$(cat "$FILEREC")
+
+    if ! pid=$(recording_pid); then
+        rm -f "$PIDFILE" "$FILEREC"
+        refresh_bar
+        return 0
+    fi
+
+    # SIGINT: wf-recorder dosyayı düzgün kapatır (mp4 başlığı yazılır).
+    # SIGKILL ile öldürülen bir mp4 oynatılamaz.
+    kill -INT "$pid" 2>/dev/null
+    local i
+    for (( i = 0; i < 100; i++ )); do
+        kill -0 "$pid" 2>/dev/null || break
+        sleep 0.1
+    done
+
+    rm -f "$PIDFILE" "$FILEREC"
+    refresh_bar
+
+    if [[ -n "$file" && -s "$file" ]]; then
+        notify "Ekran kaydı kaydedildi" "${file/#$HOME/\~}"
+    else
+        notify "Ekran kaydı kaydedilemedi" "Ayrıntı: ${LOG/#$HOME/\~}" dialog-error
+    fi
+}
+
+status() {
+    recording_pid >/dev/null || return 0     # boş çıktı → waybar modülü gizler
+    local file="" since=""
+    [[ -f "$FILEREC" ]] && file=$(cat "$FILEREC")
+    [[ -f "$PIDFILE" ]] && since=$(date -r "$PIDFILE" +%H:%M:%S 2>/dev/null)
+    local tip="Ekran kaydediliyor (başlangıç $since)"$'\n'"${file/#$HOME/\~}"$'\n'"Tıkla: durdur"
+    # JSON'u jq üretiyor: dosya yolundaki " ya da \ çıktıyı bozmasın.
+    if command -v jq >/dev/null 2>&1; then
+        jq -cn --arg tip "$tip" '{text: "󰑊 REC", class: "recording", tooltip: $tip}'
+    else
+        printf '{"text":"󰑊 REC","class":"recording","tooltip":"Ekran kaydediliyor — tıkla: durdur"}\n'
+    fi
+}
+
+case "${1:-}" in
+    region|full) if recording_pid >/dev/null; then stop; else start "$1"; fi ;;
+    stop)        stop ;;
+    status)      status ;;
+    *)           printf 'kullanım: %s {region|full|stop|status}\n' "${0##*/}" >&2; exit 2 ;;
+esac

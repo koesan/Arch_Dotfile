@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════════════════
+#  keybinds — aranabilir kısayol listesi (SUPER+K)
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  NEDEN VAR: Kısayolların tek kaynağı hypr/lua/binds.lua ve orada her
+#  kısayolun `description` alanı zaten yazılı. Hyprland bu açıklamaları
+#  `hyprctl binds -j` ile veriyor; bu betik onları rofi'de aranabilir bir
+#  listeye çeviriyor. Ayrı, elle tutulan bir "kısayol listesi" yok — README ya
+#  da binds.lua değişince eskiyecek ikinci bir kopya olmasın diye.
+#
+#  NEDEN SEÇİNCE ÇALIŞTIRMIYOR: Lua yapılandırmasında her kısayol Hyprland'e
+#  `dispatcher: "__lua"`, `arg: "<numara>"` olarak görünüyor; yani hangi komutu
+#  çalıştırdığı dışarıdan okunamıyor ve yeniden tetiklenemiyor. Liste bu
+#  yüzden salt okunur: yazarak arayın, ESC ile kapatın.
+#
+#  Modmask bitleri (Hyprland): SHIFT=1  CTRL=4  ALT=8  SUPER=64
+#
+#  Bağımlılıklar: hyprctl, jq, rofi
+# ═══════════════════════════════════════════════════════════════════════════
+set -uo pipefail
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 || return 0
+    notify-send -a "Kısayollar" -i preferences-desktop-keyboard "$1" "${2:-}"
+}
+
+for bin in hyprctl jq rofi; do
+    command -v "$bin" >/dev/null 2>&1 || { notify "Kısayol listesi açılamadı" "$bin kurulu değil"; exit 1; }
+done
+
+# Aynı menü ikinci kez açılmasın: rofi zaten açıksa kısayol onu kapatır.
+if pgrep -x rofi >/dev/null 2>&1; then
+    pkill -x rofi
+    exit 0
+fi
+
+binds=$(hyprctl binds -j 2>/dev/null) || { notify "Kısayol listesi açılamadı" "hyprctl binds yanıt vermedi"; exit 1; }
+
+# jq'da bit işlemi yok; her bit, bölüp 2'ye göre kalanla okunuyor.
+list=$(jq -r '
+    def bit($n): ((.modmask / $n) | floor) % 2 == 1;
+    def mods: [ (if bit(64) then "SUPER" else empty end),
+                (if bit(4)  then "CTRL"  else empty end),
+                (if bit(8)  then "ALT"   else empty end),
+                (if bit(1)  then "SHIFT" else empty end) ];
+    def keyname:
+        { "left": "←", "right": "→", "up": "↑", "down": "↓",
+          "mouse:272": "sol tık sürükle", "mouse:273": "sağ tık sürükle",
+          "mouse_down": "tekerlek ↓", "mouse_up": "tekerlek ↑" }[.key]
+        // (.key | sub("^XF86"; ""));
+    def pad($w): if length < $w then . + (" " * ($w - length)) else . end;
+
+    .[]
+    | ((mods + [keyname]) | join(" + ")) as $combo
+    | ($combo | pad(34)) + (if .description == "" then "(açıklama yok)" else .description end)
+' <<<"$binds") || { notify "Kısayol listesi açılamadı" "hyprctl çıktısı okunamadı"; exit 1; }
+
+# -no-custom: listede olmayan bir şey yazıp Enter'a basınca hiçbir şey olmasın.
+# Genişlik burada veriliyor: tema penceresi uygulama listesine göre dar ve
+# "kısayol + açıklama" satırları sağdan kesiliyordu.
+rofi -dmenu -i -no-custom -p "Kısayollar" \
+    -theme-str 'window { width: 52em; } listview { lines: 14; }' \
+    <<<"$list" >/dev/null
+exit 0
