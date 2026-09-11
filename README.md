@@ -459,6 +459,15 @@ caffeine`. İkisi de açık görünüyorsa hypridle eski yapılandırmayla çal�
 olabilir: `killall hypridle && hypridle &`. Panelde düğme hiç görünmüyorsa
 betik kurulmamıştır: `ls -l ~/.local/bin/caffeine`.
 
+**Ekran kilitleniyor ama kapanmıyor / wlogout'ta "Oturumu Kapat" çalışmıyor**
+Düzeltildi. İkisi de eski biçim `hyprctl dispatch dpms off` ve
+`hyprctl dispatch exit` kullanıyordu. Yapılandırma Lua olduğunda Hyprland
+dispatch metnini Lua ifadesi olarak çalıştırır ve eski biçim hata verir:
+`[string "return hl.dispatch(dpms on)"]:1: ')' expected near 'on'`.
+`hypridle.conf` artık `hl.dsp.dpms({action = "off"})`, wlogout ise
+`hl.dsp.exit()` kullanıyor. Eski dosya hâlâ duruyorsa kurulumu yeniden
+çalıştırıp hypridle'ı yeniden başlatın: `killall hypridle && hypridle &`.
+
 **Panelde en soldaki kutunun arka planı kayboluyor**
 Düzeltildi. Sebebi `style.css` içinde `window#waybar.empty #taskbar` kuralıydı:
 `.empty` sınıfını `hyprland/window` modülü panelin tamamına ekler ve yalnızca
