@@ -1,0 +1,17 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  powerprofile-auto.service — fiş durumunu BİR KEZ kontrol eder
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  Kendi başına etkinleştirilmez; powerprofile-auto.timer tetikler.
+#  Betik: ~/.local/bin/powerprofile (kaynağı configs/bin/powerprofile)
+#
+#  Elle denemek için:   systemctl --user start powerprofile-auto.service
+#  Günlük:              journalctl --user -u powerprofile-auto.service
+# ═══════════════════════════════════════════════════════════════════════════
+
+[Unit]
+Description=Fiş durumuna göre güç profili (Arch_Dotfile)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/powerprofile auto

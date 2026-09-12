@@ -1,0 +1,28 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  powerprofile-auto.timer — fişe takma/çekmeyi dakikada bir yakalar
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  NEDEN ZAMANLAYICI: Fiş takıldığında anında haber veren tek yol udev/D-Bus
+#  dinleyen SÜREKLİ çalışan bir süreçtir (ör. `upower --monitor`); o da
+#  bellekte kalıcı yer kaplar. Zamanlayıcıda arada hiçbir süreç yok, betik
+#  bir saniyeden kısa sürede çıkıyor. Gecikme en fazla bir dakika.
+#
+#  Betik yalnızca fiş durumu DEĞİŞTİĞİNDE profili değiştirir; menüden elle
+#  seçtiğiniz profil bir dakika sonra geri alınmaz.
+#
+#  Kurulum betiği bunu yalnızca pili OLAN ve power-profiles-daemon KURULU
+#  makinede etkinleştirir (setup_power_profile).
+#      systemctl --user enable --now powerprofile-auto.timer
+#      systemctl --user disable --now powerprofile-auto.timer   # otomatiği kapat
+# ═══════════════════════════════════════════════════════════════════════════
+
+[Unit]
+Description=Güç profilini fiş durumuna göre kontrol et (Arch_Dotfile)
+
+[Timer]
+OnStartupSec=30s
+OnUnitActiveSec=1min
+AccuracySec=15s
+
+[Install]
+WantedBy=timers.target

@@ -72,6 +72,7 @@ window#waybar.hidden {
 #submap,
 #window,
 #clock,
+#mpris,
 #custom-recording,
 #privacy,
 #custom-caffeine,
@@ -295,6 +296,12 @@ window#waybar.empty #window {
                  "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
 }
 #privacy       { color: @red; }
+
+/* Çalan medya. Duraklatılmışken soluk: göz, panelde ÇALAN bir şey olup
+   olmadığını renkten anlasın. Boşken modül hiç çizilmez. */
+#mpris         { color: @mauve; }
+#mpris.paused  { color: @overlay1; }
+#mpris.stopped { color: @overlay1; }
 
 /* Ekran kaydı: kayıt sürerken görünen tek modül. Kırmızı ZEMİN veriliyor,
    yalnızca kırmızı yazı değil — kaydın açık kaldığını gözden kaçırmak

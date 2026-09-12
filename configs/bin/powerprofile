@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════════════════
+#  powerprofile — güç profili menüsü ve otomatik geçiş
+#  Arch_Dotfile · https://github.com/koesan/Arch_Dotfile
+#
+#  NEDEN VAR: Waybar'ın yerleşik `power-profiles-daemon` modülü tıklanınca
+#  profilleri SIRAYLA değiştirir; istediğiniz profile varmak için iki üç kez
+#  tıklamak ve panelde hangi profilde olduğunuzu okumak gerekir. Burada
+#  paneldeki PİL simgesine tıklamak bir seçim menüsü açar: hangi profilde
+#  olduğunuz ● ile işaretli görünür, istediğinize tek tıklamada geçersiniz.
+#
+#  OTOMATİK GEÇİŞ (systemd zamanlayıcısı, dakikada bir):
+#      fişe takılı  → performans
+#      pilde        → tasarruf
+#
+#  Kural yalnızca FİŞ DURUMU DEĞİŞTİĞİNDE uygulanır. Böylece menüden elle
+#  seçtiğiniz profil bir dakika sonra geri alınmaz; seçiminiz fişi takana ya
+#  da çekene kadar korunur.
+#
+#  Kullanım:
+#    powerprofile menu              seçim menüsü (waybar pil tıklaması)
+#    powerprofile auto              fiş durumuna göre uygula (zamanlayıcı)
+#    powerprofile set <profil>      doğrudan ayarla
+#    powerprofile current           geçerli profili yazdır
+#
+#  Test için:  BATTERY_SYSFS=/sahte/power_supply powerprofile auto
+#
+#  Bağımlılıklar: power-profiles-daemon (powerprofilesctl), rofi (menu),
+#                 notify-send (isteğe bağlı)
+# ═══════════════════════════════════════════════════════════════════════════
+set -uo pipefail
+
+SYSFS=${BATTERY_SYSFS:-/sys/class/power_supply}
+RUNTIME="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+ACSTATE="$RUNTIME/powerprofile.ac"
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 || return 0
+    notify-send -a "Güç profili" -u "${3:-low}" -i "${2:-battery}" "$1" "${4:-}"
+}
+
+have_ppd() { command -v powerprofilesctl >/dev/null 2>&1; }
+
+# `powerprofilesctl list` çıktısı:  "* performance:" / "  balanced:"
+profiles() {
+    powerprofilesctl list 2>/dev/null | sed -n 's/^[*[:space:]]*\([a-z-]\+\):$/\1/p'
+}
+
+current() { powerprofilesctl get 2>/dev/null; }
+
+label_for() {
+    case "$1" in
+        performance) printf '󰓅  Performans' ;;
+        balanced)    printf '󰾅  Dengeli' ;;
+        power-saver) printf '󰾆  Tasarruf' ;;
+        *)           printf '󰁹  %s' "$1" ;;
+    esac
+}
+
+# İstenen profil bu makinede yoksa dengeliye, o da yoksa ilk profile düşer.
+# (Bazı dizüstülerde ppd yalnızca iki profil sunar.)
+pick_available() {
+    local want="$1" p first=""
+    while read -r p; do
+        [[ -z "$first" ]] && first="$p"
+        [[ "$p" == "$want" ]] && { printf '%s' "$p"; return 0; }
+    done < <(profiles)
+    while read -r p; do
+        [[ "$p" == "balanced" ]] && { printf '%s' "$p"; return 0; }
+    done < <(profiles)
+    [[ -n "$first" ]] && printf '%s' "$first"
+}
+
+set_profile() {
+    local target="$1"
+    powerprofilesctl set "$target" 2>/dev/null
+}
+
+do_menu() {
+    have_ppd || { notify "Güç profili değiştirilemiyor" dialog-error normal \
+        "power-profiles-daemon kurulu değil"; exit 1; }
+    command -v rofi >/dev/null 2>&1 || { notify "Menü açılamadı" dialog-error normal "rofi kurulu değil"; exit 1; }
+
+    local now menu="" line p
+    now=$(current)
+    declare -A id_by_line=()
+    while read -r p; do
+        [[ -n "$p" ]] || continue
+        if [[ "$p" == "$now" ]]; then line="●  $(label_for "$p")"; else line="   $(label_for "$p")"; fi
+        id_by_line["$line"]="$p"
+        menu+="$line"$'\n'
+    done < <(profiles)
+
+    [[ -n "$menu" ]] || { notify "Güç profili okunamadı" dialog-error normal "powerprofilesctl yanıt vermedi"; exit 1; }
+
+    local sel
+    sel=$(printf '%s' "$menu" | rofi -dmenu -i -no-custom -p "Güç profili" \
+        -theme-str 'window { width: 22em; } listview { lines: 3; }')
+    [[ -n "$sel" ]] || exit 0
+
+    local target="${id_by_line[$sel]:-}"
+    [[ -n "$target" ]] || exit 0
+    [[ "$target" == "$now" ]] && exit 0
+
+    if set_profile "$target"; then
+        notify "Güç profili: ${target}" battery
+    else
+        notify "Güç profili değiştirilemedi" dialog-error normal "$target"
+    fi
+}
+
+# Fişte miyiz? Yalnızca şarj cihazına bakılır; pil durumu burada kullanılmaz
+# (bkz. battery-notify: şarj eşiğindeki pil fişteyken de "Not charging" der).
+ac_online() {
+    local dev type found=false
+    for dev in "$SYSFS"/*; do
+        type=$(cat "$dev/type" 2>/dev/null) || continue
+        case "$type" in
+            Mains|USB)
+                found=true
+                [[ "$(cat "$dev/online" 2>/dev/null)" == 1 ]] && { printf 'on'; return 0; }
+                ;;
+        esac
+    done
+    $found || return 1          # şarj cihazı bilgisi yok → karar verilemez
+    printf 'off'
+}
+
+do_auto() {
+    have_ppd || exit 0
+    local now last target
+    now=$(ac_online) || exit 0
+    last=$(cat "$ACSTATE" 2>/dev/null)
+
+    # Fiş durumu değişmediyse hiçbir şey yapma: elle seçilen profil korunur.
+    [[ "$now" == "$last" ]] && exit 0
+    printf '%s\n' "$now" > "$ACSTATE"
+
+    if [[ "$now" == on ]]; then target=$(pick_available performance); else target=$(pick_available power-saver); fi
+    [[ -n "$target" ]] || exit 0
+    [[ "$target" == "$(current)" ]] && exit 0
+
+    set_profile "$target" || exit 0
+
+    # İlk çalıştırmada (oturum açılışı) bildirim gösterme: kullanıcı bir şey
+    # yapmadı, yalnızca durum ilk kez kaydedildi.
+    [[ -n "$last" ]] || exit 0
+    if [[ "$now" == on ]]; then
+        notify "Fişe takıldı → $target" battery-charging
+    else
+        notify "Pile geçildi → $target" battery
+    fi
+}
+
+case "${1:-menu}" in
+    menu)    do_menu ;;
+    auto)    do_auto ;;
+    set)     have_ppd || exit 1; set_profile "$(pick_available "${2:-balanced}")" ;;
+    current) current ;;
+    *)       printf 'kullanım: %s {menu|auto|set <profil>|current}\n' "${0##*/}" >&2; exit 2 ;;
+esac

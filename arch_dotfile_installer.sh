@@ -835,7 +835,7 @@ setup_dotfiles() {
     # bildirimi. Pil betiğini systemd zamanlayıcısı çalıştırır; zamanlayıcı
     # setup_battery_notify içinde, yalnızca pili olan makinede açılır.
     local script
-    for script in screenrecord keybinds battery-notify; do
+    for script in screenrecord keybinds battery-notify powerprofile; do
         deploy_file "$REPO_DIR/configs/bin/$script" "$HOME/.local/bin/$script"
         run chmod +x "$HOME/.local/bin/$script"
     done
@@ -1448,6 +1448,38 @@ setup_battery_notify() {
     fi
 }
 
+#  Güç profili — paneldeki pil simgesine tıklayınca menü, fiş takılıp
+#  çekildiğinde otomatik geçiş (performans / tasarruf).
+#
+#  Zamanlayıcı yalnızca pili OLAN ve power-profiles-daemon KURULU makinede
+#  açılır: masaüstünde fiş durumu hiç değişmez, sunucuda ppd olmayabilir.
+setup_power_profile() {
+    step "Güç profili (pil simgesi menüsü + otomatik geçiş)"
+    local unit_dir="$HOME/.config/systemd/user"
+    deploy_file "$REPO_DIR/configs/systemd/powerprofile-auto.service" "$unit_dir/powerprofile-auto.service"
+    deploy_file "$REPO_DIR/configs/systemd/powerprofile-auto.timer"   "$unit_dir/powerprofile-auto.timer"
+
+    if ! command -v powerprofilesctl >/dev/null 2>&1; then
+        warning "power-profiles-daemon yok — otomatik güç profili atlandı"
+        note "Menü ve otomatik geçiş için: sudo pacman -S power-profiles-daemon"
+        return 0
+    fi
+    if ! has_system_battery; then
+        info "Bu makinede pil yok — otomatik geçiş etkinleştirilmedi (menü yine çalışır)"
+        return 0
+    fi
+
+    $DRY_RUN && { printf '%s  [kuru] systemctl --user enable --now powerprofile-auto.timer%s\n' "$YELLOW" "$NC"; return 0; }
+
+    systemctl --user daemon-reload 2>/dev/null
+    if systemctl --user enable --now powerprofile-auto.timer 2>/dev/null; then
+        success "  powerprofile-auto.timer etkin (fişte performans, pilde tasarruf)"
+    else
+        warning "powerprofile-auto.timer şu an etkinleştirilemedi"
+        note "Oturum açtıktan sonra: systemctl --user enable --now powerprofile-auto.timer"
+    fi
+}
+
 setup_xhost() {
     # Root olarak açılan grafik uygulamaların XWayland'e erişebilmesi için.
     # Satır zaten varsa TEKRAR EKLENMEZ — eski sürüm her çalıştırmada
@@ -1530,6 +1562,7 @@ run_checks() {
         "$HOME/.local/bin/screenrecord:ekran kaydı betiği" \
         "$HOME/.local/bin/keybinds:kısayol listesi" \
         "$HOME/.local/bin/battery-notify:düşük pil bildirimi" \
+        "$HOME/.local/bin/powerprofile:güç profili menüsü" \
         "$HOME/.config/swappy/config:görüntü düzenleyici (kayıt dizini)" \
         "$HOME/.zshrc:zsh yapılandırması"
     do
@@ -1560,13 +1593,22 @@ run_checks() {
             ((fails++))
         fi
     done
-    # Pil zamanlayıcısı yalnızca pili olan makinede beklenir (setup_battery_notify).
+    # Pil zamanlayıcıları yalnızca pili olan makinede beklenir
+    # (setup_battery_notify / setup_power_profile).
     if has_system_battery; then
         if systemctl --user is-enabled --quiet battery-notify.timer 2>/dev/null; then
             printf '  %s✓%s battery-notify.timer (kullanıcı)\n' "$GREEN" "$NC"
         else
             printf '  %s✗%s battery-notify.timer etkin değil — düşük pil bildirimi gelmez\n' "$RED" "$NC"
             ((fails++))
+        fi
+        if command -v powerprofilesctl >/dev/null 2>&1; then
+            if systemctl --user is-enabled --quiet powerprofile-auto.timer 2>/dev/null; then
+                printf '  %s✓%s powerprofile-auto.timer (kullanıcı)\n' "$GREEN" "$NC"
+            else
+                printf '  %s✗%s powerprofile-auto.timer etkin değil — profil fişe göre değişmez\n' "$RED" "$NC"
+                ((fails++))
+            fi
         fi
     fi
 
@@ -1719,6 +1761,7 @@ main() {
     setup_user_dirs
     setup_swappy
     setup_battery_notify
+    setup_power_profile
     setup_xhost
     setup_python
     setup_nemo

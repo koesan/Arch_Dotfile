@@ -36,6 +36,7 @@
     // biçiminde çalışmıyor.
     "modules-center": ["custom/ws1", "custom/ws2", "custom/ws3", "custom/ws4", "custom/ws5", "custom/ws6", "custom/ws7", "custom/ws8", "custom/ws9", "custom/ws10"],
     "modules-right":  [
+        "mpris",
         "custom/recording",
         "privacy",
         "custom/caffeine",
@@ -240,6 +241,46 @@
             { "type": "screenshare", "tooltip": true, "tooltip-icon-size": 20 },
             { "type": "audio-in",    "tooltip": true, "tooltip-icon-size": 20 }
         ]
+    },
+
+    // Çalan medya (MPRIS) — YALNIZCA bir şey çalarken/duraklatılmışken görünür.
+    //
+    // Kaynak MPRIS'tir, yani yalnızca müzik çalarlar değil TARAYICIDAKİ medya
+    // da görünür: Brave/Chromium/Firefox'ta açılan YouTube, Spotify Web ya da
+    // herhangi bir video sitesi kendini MPRIS ile duyurur. mpv, VLC, Spotify
+    // masaüstü uygulaması da aynı listeye girer.
+    //
+    // Birden çok oynatıcı varsa waybar "playerctld" üzerinden EN SON
+    // kullanılanı gösterir; hepsini ayrı ayrı göstermez.
+    //
+    // Panelin sağı kalabalık olduğu için metin kısıtlı: başlık + sanatçı,
+    // toplam 32 karakter. Tamamı fareyle üzerine gelince ipucunda görünür.
+    //
+    // Tıklama: sol = oynat/duraklat, sağ = sonraki, orta = önceki
+    // (waybar'ın yerleşik davranışı; ayrıca komut yazmak gerekmez).
+    "mpris": {
+        "format":            "{player_icon} {dynamic}",
+        "format-paused":     "{status_icon} {dynamic}",
+        "dynamic-order":     ["title", "artist"],
+        "dynamic-separator": "  ·  ",
+        "dynamic-len":       28,
+        "title-len":         28,
+        "artist-len":        16,
+        "max-length":        34,
+        "player-icons": {
+            "default":  "󰝚",
+            "brave":    "󰖟",
+            "chromium": "󰊯",
+            "firefox":  "󰈹",
+            "mpv":      "󰐹",
+            "vlc":      "󰕼",
+            "spotify":  "󰓇"
+        },
+        "status-icons": {
+            "paused":  "󰏤",
+            "stopped": "󰓛"
+        },
+        "tooltip-format": "{player} · {status}\n{title}\n{artist}\nSol tık: oynat/duraklat  ·  Sağ tık: sonraki"
     },
 
     // Ekran kaydı göstergesi — YALNIZCA kayıt sürerken görünür.
@@ -450,7 +491,20 @@
         "format-full":     "󰁹 Dolu",
         "format-icons":    ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
         "format-time":     "{H}s {M}dk",
-        "tooltip-format":  "{capacity}%  ·  {power:0.1f} W\nKalan: {time}\nSağlık: {health}%  ·  {cycles} döngü"
+        "tooltip-format":  "{capacity}%  ·  {power:0.1f} W\nKalan: {time}\nSağlık: {health}%  ·  {cycles} döngü\nTıkla: güç profili seç",
+
+        // Pil simgesine tıklamak GÜÇ PROFİLİ menüsünü açar (Performans /
+        // Dengeli / Tasarruf), geçerli profil ● ile işaretli gelir.
+        //
+        // Waybar'ın yerleşik "power-profiles-daemon" modülü bilerek
+        // kullanılmıyor: o modül tıklamada profilleri sırayla değiştirir,
+        // yani istediğiniz profile varmak için birkaç kez tıklamak gerekir.
+        // Ayrıca panelde bir modül daha yer kaplardı.
+        //
+        // Fiş takılıp çekildiğinde profil zaten kendiliğinden değişir
+        // (performans / tasarruf) — bkz. configs/bin/powerprofile ve
+        // configs/systemd/powerprofile-auto.timer.
+        "on-click": "$HOME/.local/bin/powerprofile menu"
     },
 
     // Sistem tepsisi — BİLEREK "modules-right" listesinde DEĞİL.

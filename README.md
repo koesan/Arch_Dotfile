@@ -339,7 +339,7 @@ Noto Fonts (+ emoji) · MS Fonts
 | --- | --- |
 | Sol | `wlr/taskbar` — açık her pencere bir simge (tıkla: geç, orta tık: kapat), yanında odaklı pencerenin başlığı |
 | Orta | Workspace numaraları — **tıklanabilir**. Sabit liste yok: yalnızca **dolu** olanlar çizilir, üç workspace kullanıyorsanız `1 2 3` görünür |
-| Sağ | **󰑊 REC (yalnızca ekran kaydı sürerken)** · gizlilik · **kahve (uyku engelle)** · ses · **mikrofon** · bluetooth · ağ · parlaklık · CPU · RAM · sıcaklık · pil · **saat (en sağda)** |
+| Sağ | **çalan medya (yalnızca bir şey çalarken)** · **󰑊 REC (yalnızca ekran kaydı sürerken)** · gizlilik · **kahve (uyku engelle)** · ses · **mikrofon** · bluetooth · ağ · parlaklık · CPU · RAM · sıcaklık · pil · **saat (en sağda)** |
 
 Mikrofon modülü yalnızca durum gösterir (yüzde yok): açıkken 󰍬, kapalıyken
 kırmızı 󰍭. Tıklayınca açılıp kapanır, sağ tık `pavucontrol`'ün giriş sekmesini
@@ -350,6 +350,56 @@ yok; tek istisna geçerli bir simge yayımlamadığı için waybar'ın "eksik g�
 yer tutucusunu (üstü çizili daire) çizdiriyordu. Tepsiyi geri istiyorsanız
 `waybar/config` içindeki `"modules-right"` listesine `"tray"` satırını
 ekleyin — modülün tanımı dosyada duruyor.
+
+### 🎵 Çalan medya göstergesi
+
+Panelin sağında, durum simgelerinin solunda çalan şarkının/videonun adı
+görünür. Kaynak **MPRIS** olduğu için yalnızca müzik çalarlar değil
+**tarayıcıdaki medya da** görünür: Brave/Chromium/Firefox'ta açtığınız
+YouTube, Spotify Web ya da herhangi bir video sitesi, ayrıca mpv, VLC ve
+Spotify masaüstü uygulaması.
+
+| Durum | Görünüm |
+| --- | --- |
+| Çalıyor | Oynatıcının simgesi (Brave 󰖟, Firefox 󰈹, mpv 󰐹, Spotify 󰓇 …) + başlık · sanatçı, **mor** |
+| Duraklatıldı | 󰏤 + aynı metin, **soluk gri** |
+| Hiçbir şey çalmıyor | Modül **hiç çizilmez** — panel kalabalıklaşmaz |
+
+- **Sol tık** oynat/duraklat · **sağ tık** sonraki · **orta tık** önceki.
+- Metin 34 karakterle sınırlı; tamamı fareyle üzerine gelince ipucunda görünür.
+- Birden çok oynatıcı açıksa en son kullanılan gösterilir.
+
+### 🔋 Güç profili (pil simgesine tıklayın)
+
+Paneldeki **pil simgesine tıklayınca** güç profili menüsü açılır; geçerli
+profil ● ile işaretlidir, tek tıklamayla geçersiniz:
+
+| | Profil |
+| --- | --- |
+| 󰓅 | Performans |
+| 󰾅 | Dengeli |
+| 󰾆 | Tasarruf |
+
+**Fiş takılıp çekildiğinde profil kendiliğinden değişir:** fişte
+**performans**, pilde **tasarruf**. Kural yalnızca fiş durumu *değiştiğinde*
+uygulanır — menüden elle seçtiğiniz profil bir dakika sonra geri alınmaz,
+seçiminiz fişi takana/çekene kadar korunur.
+
+Arka planda sürekli çalışan süreç yok: `powerprofile-auto.timer` dakikada bir
+`~/.local/bin/powerprofile auto` çalıştırır (kaynağı:
+`configs/bin/powerprofile`), betik bir saniyeden kısa sürede çıkar. En fazla
+bir dakikalık gecikme olur.
+
+```bash
+powerprofile current                                   # geçerli profil
+powerprofile set balanced                              # doğrudan ayarla
+systemctl --user disable --now powerprofile-auto.timer # otomatiği kapat
+```
+
+**Waybar'ın yerleşik `power-profiles-daemon` modülü neden kullanılmıyor?**
+O modül tıklamada profilleri **sırayla** değiştirir; istediğiniz profile
+varmak için birkaç kez tıklamak ve panelde hangisinde olduğunuzu okumak
+gerekir. Menü tek tıklamada seçtiriyor ve panelde fazladan yer kaplamıyor.
 
 ### Workspace göstergesi neden `custom/wsN` modülleri?
 
@@ -466,7 +516,8 @@ animations = {
 ├── wlogout/                  # oturum menüsü (+ icons-svg/)
 ├── alacritty/                # terminal (Blood Moon) + tema koleksiyonu
 ├── wofi/                     # yedek başlatıcı
-├── systemd/user/             # battery-notify.timer + .service (düşük pil)
+├── systemd/user/             # battery-notify.timer (düşük pil)
+│                             # powerprofile-auto.timer (fişe göre güç profili)
 ├── gtk-3.0/  gtk-4.0/        # kurulum betiği üretir
 ├── qt5ct/    qt6ct/          # kurulum betiği üretir
 └── arch-dotfile-backup/      # üzerine yazılan dosyaların yedekleri
@@ -481,7 +532,8 @@ animations = {
 │   ├── screenshot            # PRINT kısayollarının çağırdığı görüntü betiği
 │   ├── screenrecord          # CTRL+PRINT ekran kaydı + panel REC göstergesi
 │   ├── keybinds              # SUPER+K kısayol listesi
-│   └── battery-notify        # düşük pil bildirimi (systemd zamanlayıcısı çağırır)
+│   ├── battery-notify        # düşük pil bildirimi (systemd zamanlayıcısı çağırır)
+│   └── powerprofile          # pil simgesi menüsü + fişe göre otomatik profil
 ├── .icons/     .themes/      # simge ve GTK temaları
 ├── .zshrc      .oh-my-zsh/
 └── .cache/arch-dotfile-install-<tarih>.log
