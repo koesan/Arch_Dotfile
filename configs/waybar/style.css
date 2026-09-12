@@ -70,7 +70,6 @@ window#waybar.hidden {
 /* Ortak modül kutusu. Her modül kendi yuvarlatılmış adasında durur. */
 #taskbar,
 #submap,
-#window,
 #clock,
 #mpris,
 #custom-recording,
@@ -225,29 +224,14 @@ window#waybar.hidden {
 }
 
 /* DİKKAT — buraya `window#waybar.empty #taskbar` kuralı EKLEMEYİN.
-   `.empty` sınıfını `hyprland/window` modülü panelin TAMAMINA ekler ve
-   yalnızca "odaklı pencerenin BAŞLIĞI boş" demektir; "hiç pencere yok"
-   demek değildir. Eskiden burada öyle bir kural vardı: başlıksız bir
-   pencere odaklanınca (ör. yeni açılan boş bir pencere) görev çubuğundaki
-   simgeler yerinde dururken arka plan adası kayboluyor, panelin yalnızca
-   en solundaki kutu görünmez oluyordu. Boş görev çubuğu zaten yukarıdaki
-   sıfır `padding` sayesinde kendiliğinden gizleniyor. */
-
-/* ── Pencere başlığı ─────────────────────────────────────────────────────── */
-#window {
-    color: @subtext0;
-    font-weight: 400;
-}
-
-/* Odaklı pencere yokken boş bir kutu kalmasın.
-   Waybar bu durumda panele `.empty` sınıfını ekler.
-   (GTK3 `:empty` sözde-sınıfını desteklemez, o yüzden sınıfla eşleşiyoruz.) */
-window#waybar.empty #window {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
-}
+   `.empty` sınıfını panele `hyprland/window` modülü ekler (o modül bu
+   yapılandırmadan kaldırıldı, dolayısıyla sınıf artık hiç gelmiyor) ve
+   geldiğinde bile yalnızca "odaklı pencerenin BAŞLIĞI boş" demektir;
+   "hiç pencere yok" demek değildir. Eskiden burada öyle bir kural vardı:
+   başlıksız bir pencere odaklanınca görev çubuğundaki simgeler yerinde
+   dururken arka plan adası kayboluyor, panelin en solundaki kutu görünmez
+   oluyordu. Boş görev çubuğu zaten yukarıdaki sıfır `padding` sayesinde
+   kendiliğinden gizleniyor. */
 
 #submap {
     background-color: @mauve;

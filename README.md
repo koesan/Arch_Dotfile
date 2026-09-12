@@ -330,14 +330,14 @@ Noto Fonts (+ emoji) · MS Fonts
 
 ```
 ┌─────────────────────────────┬──────────────┬──────────────────────────────────┐
-│ açık uygulamalar + başlık   │ workspace'ler│ durum modülleri … pil, saat      │
+│ açık uygulamalar + medya    │ workspace'ler│ durum modülleri … pil, saat      │
 │ SOL                         │ ORTA         │ SAĞ                              │
 └─────────────────────────────┴──────────────┴──────────────────────────────────┘
 ```
 
 | Bölge | İçerik |
 | --- | --- |
-| Sol | `wlr/taskbar` — açık her pencere bir simge (tıkla: geç, orta tık: kapat), yanında odaklı pencerenin başlığı, onun sağında **çalan medya** |
+| Sol | `wlr/taskbar` — açık her pencere bir simge (tıkla: geç, orta tık: kapat), etkin pencerenin simgesi işaretli durur; sağında **çalan medya** |
 | Orta | Workspace numaraları — **tıklanabilir**. Sabit liste yok: yalnızca **dolu** olanlar çizilir, üç workspace kullanıyorsanız `1 2 3` görünür |
 | Sağ | **󰑊 REC (yalnızca ekran kaydı sürerken)** · gizlilik · **kahve (uyku engelle)** · ses · **mikrofon** · bluetooth · ağ · parlaklık · CPU · RAM · sıcaklık · pil · **saat (en sağda)** |
 
@@ -353,9 +353,9 @@ ekleyin — modülün tanımı dosyada duruyor.
 
 ### 🎵 Çalan medya göstergesi
 
-Panelin **solunda**, odaklı pencerenin başlığının hemen sağında çalan
-şarkının/videonun adı görünür — "şu an ne açık" ve "şu an ne çalıyor"
-bilgisi yan yana durur. Kaynak **MPRIS** olduğu için yalnızca müzik çalarlar değil
+Panelin **solunda**, görev çubuğunun hemen sağında çalan şarkının/videonun
+adı görünür — "şu an ne açık" ve "şu an ne çalıyor" bilgisi yan yana durur.
+Kaynak **MPRIS** olduğu için yalnızca müzik çalarlar değil
 **tarayıcıdaki medya da** görünür: Brave/Chromium/Firefox'ta açtığınız
 YouTube, Spotify Web ya da herhangi bir video sitesi, ayrıca mpv, VLC ve
 Spotify masaüstü uygulaması.
@@ -368,12 +368,9 @@ Spotify masaüstü uygulaması.
 
 - **Sol tık** oynat/duraklat · **sağ tık** sonraki · **orta tık** önceki.
 - Metin 34 karakterle sınırlı; tamamı fareyle üzerine gelince ipucunda görünür.
-  Pencere başlığıyla yan yana durduğu için ikisi birden uzarsa ortadaki
-  workspace göstergesi kayar — sınır bu yüzden dar tutuldu.
+  Uzun bir metin ortadaki workspace göstergesini kaydırdığı için sınır dar
+  tutuldu.
 - Birden çok oynatıcı açıksa en son kullanılan gösterilir.
-- Çalan uygulama aynı zamanda odaktaki pencereyse iki metin benzer görünür
-  (ör. tarayıcıda video izlerken). Başka bir pencereye geçtiğinizde solda
-  bulunduğunuz pencere, yanında çalmaya devam eden medya yazar.
 
 ### 🔋 Güç profili (pil simgesine tıklayın)
 
@@ -583,12 +580,19 @@ dispatch metnini Lua ifadesi olarak çalıştırır ve eski biçim hata verir:
 `hl.dsp.exit()` kullanıyor. Eski dosya hâlâ duruyorsa kurulumu yeniden
 çalıştırıp hypridle'ı yeniden başlatın: `killall hypridle && hypridle &`.
 
-**Panelde en soldaki kutunun arka planı kayboluyor**
-Düzeltildi. Sebebi `style.css` içinde `window#waybar.empty #taskbar` kuralıydı:
-`.empty` sınıfını `hyprland/window` modülü panelin tamamına ekler ve yalnızca
-"odaklı pencerenin BAŞLIĞI boş" demektir — "hiç pencere yok" demek değil.
-Başlıksız bir pencere odaklanınca görev çubuğu simgeleri yerinde kalıyor ama
-arka plan adası kayboluyordu. O kuralı geri eklemeyin.
+**Panelde odaklı pencerenin başlığı görünmüyor**
+Öyle olması gerekiyor: başlığı gösteren `hyprland/window` modülü panelden
+kaldırıldı. Görev çubuğu hangi pencerenin etkin olduğunu zaten işaretliyor,
+başlık ise 45 karaktere kadar uzayıp ortadaki workspace göstergesini sağa sola
+kaydırıyordu. Geri istiyorsanız `waybar/config` içindeki `"modules-left"`
+listesine `"hyprland/window"` yazın ve modül tanımını ekleyin
+(`man 5 waybar-hyprland-window`).
+
+Not: o modülle birlikte `style.css` içine **`window#waybar.empty #taskbar`
+kuralı eklemeyin**. `.empty` sınıfını panele o modül ekler ve yalnızca "odaklı
+pencerenin BAŞLIĞI boş" demektir — "hiç pencere yok" demek değil. Başlıksız bir
+pencere odaklanınca görev çubuğu simgeleri yerinde kalırken arka plan adası
+kayboluyordu.
 
 **swappy'de kaydet düğmesine bastım ama dosya hiçbir yerde yok**
 `~/.config/swappy/config` eksik ya da `save_dir` satırı yanlış demektir.

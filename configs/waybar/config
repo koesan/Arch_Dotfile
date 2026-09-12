@@ -22,19 +22,25 @@
     "margin-right": 8,
 
     // Yerleşim:
-    //   sol   → açık uygulamalar (görev çubuğu + odaklı pencerenin başlığı)
+    //   sol   → açık uygulamalar (görev çubuğu) + çalan medya
     //   orta  → workspace ("sekme") göstergesi
     //   sağ   → durum modülleri; saat EN SAĞDA, pilin sağında
     // Not: "hyprland/submap" bilerek listede DEĞİL. Bu depodaki Lua
     // yapılandırmasında hiç submap tanımlanmıyor, dolayısıyla modül hiçbir
     // zaman bir şey göstermiyordu. Tanımı aşağıda duruyor: kendi submap'inizi
     // eklerseniz modül adını bu listeye geri yazmanız yeterli.
-    // Çalan medya SOLDA, odaklı pencerenin başlığının hemen sağında duruyor:
-    // ikisi de "şu an ne açık / ne oynuyor" bilgisi, aynı yerde toplanıyorlar.
+    // Not: odaklı pencerenin başlığını gösteren "hyprland/window" modülü
+    // KALDIRILDI. Görev çubuğu zaten hangi pencerenin etkin olduğunu
+    // (`#taskbar button.active`) işaretliyordu; başlık bunun üstüne 45
+    // karaktere kadar değişken uzunlukta bir metin ekleyip ortadaki workspace
+    // göstergesini sağa sola kaydırıyordu. Geri isterseniz modülü bu listeye
+    // yazıp tanımını eklemeniz yeterli (man 5 waybar-hyprland-window).
+    // Çalan medya SOLDA, görev çubuğunun hemen sağında duruyor: ikisi de
+    // "şu an ne açık / ne oynuyor" bilgisi, aynı yerde toplanıyorlar.
     // Sağ taraf durum simgelerine (ses, ağ, pil, saat) ayrılmış durumda ve
     // zaten kalabalık; oraya 30+ karakterlik değişken uzunlukta bir metin
     // koymak workspace göstergesini ortadan kaydırıyordu.
-    "modules-left":   ["wlr/taskbar", "hyprland/window", "mpris"],
+    "modules-left":   ["wlr/taskbar", "mpris"],
     // Workspace göstergesi TEK modül değil, workspace başına bir "custom"
     // modül. Sebebi aşağıda `custom/ws1` bloğunda anlatılıyor: yerleşik
     // `hyprland/workspaces` modülünün tıklaması Hyprland'in Lua yapılandırma
@@ -191,15 +197,6 @@
     "hyprland/submap": {
         "format": "󰌆 {}",
         "tooltip": false
-    },
-
-    "hyprland/window": {
-        "format": "{title}",
-        "max-length": 45,
-        // Her monitör kendi odaklı penceresini göstersin.
-        "separate-outputs": true
-        // Pencere yokken boş kutu kalmasın diye style.css'te
-        // `#window:empty` kuralı var.
     },
 
     // ───────────────────────────────────────────────────────────────────────
