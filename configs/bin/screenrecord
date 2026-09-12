@@ -187,7 +187,13 @@ stop() {
 }
 
 status() {
-    recording_pid >/dev/null || return 0     # boş çıktı → waybar modülü gizler
+    # Kendini toparlama: wf-recorder beklenmedik şekilde ölmüşse (disk doldu,
+    # kill -9) geride kalan durum dosyaları burada silinir. Waybar açılışta ve
+    # her sinyalde status çağırdığı için gösterge de kendiliğinden söner.
+    if ! recording_pid >/dev/null; then
+        rm -f "$PIDFILE" "$FILEREC"
+        return 0                             # boş çıktı → waybar modülü gizler
+    fi
     local file="" since=""
     [[ -f "$FILEREC" ]] && file=$(cat "$FILEREC")
     [[ -f "$PIDFILE" ]] && since=$(date -r "$PIDFILE" +%H:%M:%S 2>/dev/null)

@@ -559,6 +559,18 @@ olabilir (`sudo pacman -S jq`) — betik o durumda sessizce boş çıktı verir.
 Nedeni yukarıdaki "Workspace göstergesi neden `custom/wsN` modülleri?"
 başlığında.
 
+**Panelde kırmızı REC yazıyor ama kayıt yok**
+Kaydedici beklenmedik şekilde kapanmışsa (disk doldu, `kill -9`) gösterge bir
+sonraki tazelemeye kadar ekranda kalabilir. Göstergeye tıklayın: durum
+dosyaları temizlenir ve gösterge söner. Aynısını terminalden de yapabilirsiniz:
+`screenrecord stop`. Kaydın neden bittiğini görmek için:
+`cat $XDG_RUNTIME_DIR/screenrecord.log`
+
+**Ekran kaydı başlamıyor / dosya boş çıkıyor**
+Betik kodlayıcıları sırayla dener; hepsi başarısız olursa bildirim çıkar.
+Günlüğe bakın (`$XDG_RUNTIME_DIR/screenrecord.log`). Donanım kodlayıcı
+kullanılamıyorsa yazılım kodlayıcıya düşer, bu normaldir.
+
 **Panelde sıcaklık yanlış ya da sürekli kırmızı**
 Kurulum betiği sensörü `hwmon-path-abs` + `input-filename` çiftiyle yazar;
 düz `hwmon-path` kullanılmaz çünkü `hwmonN` numarası her açılışta değişip
