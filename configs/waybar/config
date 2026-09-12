@@ -29,14 +29,18 @@
     // yapılandırmasında hiç submap tanımlanmıyor, dolayısıyla modül hiçbir
     // zaman bir şey göstermiyordu. Tanımı aşağıda duruyor: kendi submap'inizi
     // eklerseniz modül adını bu listeye geri yazmanız yeterli.
-    "modules-left":   ["wlr/taskbar", "hyprland/window"],
+    // Çalan medya SOLDA, odaklı pencerenin başlığının hemen sağında duruyor:
+    // ikisi de "şu an ne açık / ne oynuyor" bilgisi, aynı yerde toplanıyorlar.
+    // Sağ taraf durum simgelerine (ses, ağ, pil, saat) ayrılmış durumda ve
+    // zaten kalabalık; oraya 30+ karakterlik değişken uzunlukta bir metin
+    // koymak workspace göstergesini ortadan kaydırıyordu.
+    "modules-left":   ["wlr/taskbar", "hyprland/window", "mpris"],
     // Workspace göstergesi TEK modül değil, workspace başına bir "custom"
     // modül. Sebebi aşağıda `custom/ws1` bloğunda anlatılıyor: yerleşik
     // `hyprland/workspaces` modülünün tıklaması Hyprland'in Lua yapılandırma
     // biçiminde çalışmıyor.
     "modules-center": ["custom/ws1", "custom/ws2", "custom/ws3", "custom/ws4", "custom/ws5", "custom/ws6", "custom/ws7", "custom/ws8", "custom/ws9", "custom/ws10"],
     "modules-right":  [
-        "mpris",
         "custom/recording",
         "privacy",
         "custom/caffeine",
@@ -253,8 +257,9 @@
     // Birden çok oynatıcı varsa waybar "playerctld" üzerinden EN SON
     // kullanılanı gösterir; hepsini ayrı ayrı göstermez.
     //
-    // Panelin sağı kalabalık olduğu için metin kısıtlı: başlık + sanatçı,
-    // toplam 32 karakter. Tamamı fareyle üzerine gelince ipucunda görünür.
+    // Metin bilerek kısıtlı: başlık + sanatçı, en çok 34 karakter. Solda
+    // pencere başlığıyla yan yana durduğu için ikisi birden uzarsa ortadaki
+    // workspace göstergesi kayar. Tamamı fareyle üzerine gelince görünür.
     //
     // Tıklama: sol = oynat/duraklat, sağ = sonraki, orta = önceki
     // (waybar'ın yerleşik davranışı; ayrıca komut yazmak gerekmez).

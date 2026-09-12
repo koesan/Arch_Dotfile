@@ -337,9 +337,9 @@ Noto Fonts (+ emoji) · MS Fonts
 
 | Bölge | İçerik |
 | --- | --- |
-| Sol | `wlr/taskbar` — açık her pencere bir simge (tıkla: geç, orta tık: kapat), yanında odaklı pencerenin başlığı |
+| Sol | `wlr/taskbar` — açık her pencere bir simge (tıkla: geç, orta tık: kapat), yanında odaklı pencerenin başlığı, onun sağında **çalan medya** |
 | Orta | Workspace numaraları — **tıklanabilir**. Sabit liste yok: yalnızca **dolu** olanlar çizilir, üç workspace kullanıyorsanız `1 2 3` görünür |
-| Sağ | **çalan medya (yalnızca bir şey çalarken)** · **󰑊 REC (yalnızca ekran kaydı sürerken)** · gizlilik · **kahve (uyku engelle)** · ses · **mikrofon** · bluetooth · ağ · parlaklık · CPU · RAM · sıcaklık · pil · **saat (en sağda)** |
+| Sağ | **󰑊 REC (yalnızca ekran kaydı sürerken)** · gizlilik · **kahve (uyku engelle)** · ses · **mikrofon** · bluetooth · ağ · parlaklık · CPU · RAM · sıcaklık · pil · **saat (en sağda)** |
 
 Mikrofon modülü yalnızca durum gösterir (yüzde yok): açıkken 󰍬, kapalıyken
 kırmızı 󰍭. Tıklayınca açılıp kapanır, sağ tık `pavucontrol`'ün giriş sekmesini
@@ -353,8 +353,9 @@ ekleyin — modülün tanımı dosyada duruyor.
 
 ### 🎵 Çalan medya göstergesi
 
-Panelin sağında, durum simgelerinin solunda çalan şarkının/videonun adı
-görünür. Kaynak **MPRIS** olduğu için yalnızca müzik çalarlar değil
+Panelin **solunda**, odaklı pencerenin başlığının hemen sağında çalan
+şarkının/videonun adı görünür — "şu an ne açık" ve "şu an ne çalıyor"
+bilgisi yan yana durur. Kaynak **MPRIS** olduğu için yalnızca müzik çalarlar değil
 **tarayıcıdaki medya da** görünür: Brave/Chromium/Firefox'ta açtığınız
 YouTube, Spotify Web ya da herhangi bir video sitesi, ayrıca mpv, VLC ve
 Spotify masaüstü uygulaması.
@@ -367,7 +368,12 @@ Spotify masaüstü uygulaması.
 
 - **Sol tık** oynat/duraklat · **sağ tık** sonraki · **orta tık** önceki.
 - Metin 34 karakterle sınırlı; tamamı fareyle üzerine gelince ipucunda görünür.
+  Pencere başlığıyla yan yana durduğu için ikisi birden uzarsa ortadaki
+  workspace göstergesi kayar — sınır bu yüzden dar tutuldu.
 - Birden çok oynatıcı açıksa en son kullanılan gösterilir.
+- Çalan uygulama aynı zamanda odaktaki pencereyse iki metin benzer görünür
+  (ör. tarayıcıda video izlerken). Başka bir pencereye geçtiğinizde solda
+  bulunduğunuz pencere, yanında çalmaya devam eden medya yazar.
 
 ### 🔋 Güç profili (pil simgesine tıklayın)
 
